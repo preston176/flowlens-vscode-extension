@@ -9,7 +9,7 @@
 
 > Coming soon — FlowLens is a code editor extension (primary target: VS Code). It remembers why you opened files, what you were debugging, and how your workflow looked — so when you return, you can instantly pick up where you left off.
 
-This repository contains a prototype landing page for FlowLens (coming soon). FlowLens is a VS Code extension concept plus a lightweight companion UI that helps developers reclaim lost focus and reduce the cost of context switching.
+FlowLens is a VS Code extension concept plus a lightweight companion UI that helps developers reclaim lost focus and reduce the cost of context switching.
 
 ---
 
