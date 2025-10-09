@@ -16,6 +16,14 @@
       {
         "command": "FlowLens.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "FlowLens.captureSession",
+        "title": "FlowLens: Capture Session"
+      },
+      {
+        "command": "FlowLens.showSessions",
+        "title": "FlowLens: Show Sessions"
       }
     ]
   },
