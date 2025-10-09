@@ -194,149 +194,48 @@ export function activate(context: vscode.ExtensionContext) {
 export function deactivate() {}
 
 async function getWebviewContent(panel?: vscode.WebviewPanel): Promise<string> {
-		// If a bundled webview script exists in dist, load it via webview.asWebviewUri
-		try {
-				const fs = require('fs');
-				if (panel && fs.existsSync('dist/webview.js')) {
-						const webview = panel.webview;
-						const path = require('path');
-						const scriptUri = webview.asWebviewUri(vscode.Uri.file(path.join(__dirname, '..', 'dist', 'webview.js')));
-						const cssPath = path.join(__dirname, '..', 'dist', 'webview.css');
-						const cssUri = fs.existsSync(cssPath) ? webview.asWebviewUri(vscode.Uri.file(path.join(__dirname, '..', 'dist', 'webview.css'))) : null;
-						return `<!doctype html>
-<html>
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>FlowLens Sessions</title>
-		${cssUri ? `<link rel="stylesheet" href="${cssUri}">` : ''}
-	</head>
-	<body>
-		<div id="root"></div>
-		<script src="${scriptUri}"></script>
-	</body>
-</html>`;
-				}
-		} catch (e) {
-				// ignore and fall back to inline UI
-		}
-
-		return `<!doctype html>
-<html>
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>FlowLens Sessions</title>
-		<style>
-			:root { --bg: #0b1220; --card: #0f1724; --muted: #94a3b8; --accent: #2563eb; }
-			body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background: var(--bg); color: #fff; margin:0; padding:20px; }
-			.card { background: rgba(15,23,36,0.75); padding:12px; border-radius:8px; }
-			.title { font-weight:600; font-size:16px; }
-			.muted { color: var(--muted); font-size:12px; }
-			.btn { border: none; color: white; padding:6px 10px; border-radius:6px; cursor:pointer; }
-			.btn-blue { background: var(--accent); margin-right:8px; }
-			.btn-red { background: #dc2626; }
-			.session { margin-bottom:12px; }
-			details { margin-top:8px; }
-			ul { margin-top:6px; }
-		</style>
-	</head>
-	<body>
-		<div id="root"></div>
-
-		<script>
-			const vscode = (typeof acquireVsCodeApi === 'function') ? acquireVsCodeApi() : null;
-
-			function createSessionCard(s) {
-				const wrapper = document.createElement('div');
-				wrapper.className = 'session card';
-
-				const top = document.createElement('div');
-				top.style.display = 'flex';
-				top.style.justifyContent = 'space-between';
-
-				const info = document.createElement('div');
-				const title = document.createElement('div');
-				title.className = 'title';
-				title.textContent = s.title || 'Untitled';
-				info.appendChild(title);
-
-				const ts = document.createElement('div');
-				ts.className = 'muted';
-				ts.textContent = new Date(s.timestamp).toLocaleString();
-				info.appendChild(ts);
-
-				if (s.notes) {
-					const notes = document.createElement('div');
-					notes.style.marginTop = '6px';
-					notes.className = 'muted';
-					notes.textContent = s.notes;
-					info.appendChild(notes);
-				}
-
-				const actions = document.createElement('div');
-				const resume = document.createElement('button');
-				resume.className = 'btn btn-blue';
-				resume.textContent = 'Resume';
-				resume.onclick = () => vscode && vscode.postMessage({ type: 'resume', id: s.id });
-
-				const del = document.createElement('button');
-				del.className = 'btn btn-red';
-				del.textContent = 'Delete';
-				del.onclick = () => vscode && vscode.postMessage({ type: 'delete', id: s.id });
-
-				actions.appendChild(resume);
-				actions.appendChild(del);
-
-				top.appendChild(info);
-				top.appendChild(actions);
-
-				wrapper.appendChild(top);
-
-				const details = document.createElement('details');
-				const summary = document.createElement('summary');
-				summary.textContent = 'Editors (' + ((s.editors && s.editors.length) || 0) + ')';
-				details.appendChild(summary);
-
-				const ul = document.createElement('ul');
-				(s.editors || []).forEach(e => {
-					const li = document.createElement('li');
-					li.textContent = e.path + (e.cursor ? '  - ' + (e.cursor.line + 1) + ':' + (e.cursor.col + 1) : '');
-					ul.appendChild(li);
-				});
-				details.appendChild(ul);
-				wrapper.appendChild(details);
-
-				return wrapper;
+			// Require local bundled webview assets (dist/webview.js). If missing, show an informative page.
+			try {
+					const fs = require('fs');
+					const path = require('path');
+					if (panel && fs.existsSync(path.join(__dirname, '..', 'dist', 'webview.js'))) {
+							const webview = panel.webview;
+							const scriptUri = webview.asWebviewUri(vscode.Uri.file(path.join(__dirname, '..', 'dist', 'webview.js')));
+							const cssPath = path.join(__dirname, '..', 'dist', 'webview.css');
+							const cssUri = fs.existsSync(cssPath) ? webview.asWebviewUri(vscode.Uri.file(cssPath)) : null;
+							return `<!doctype html>
+	<html>
+		<head>
+			<meta charset="utf-8" />
+			<meta name="viewport" content="width=device-width, initial-scale=1" />
+			<title>FlowLens Sessions</title>
+			${cssUri ? `<link rel="stylesheet" href="${cssUri}">` : ''}
+		</head>
+		<body>
+			<div id="root"></div>
+			<script src="${scriptUri}"></script>
+		</body>
+	</html>`;
+					} else {
+							// Informative page telling developer to build the webview
+							return `<!doctype html>
+	<html>
+		<head>
+			<meta charset="utf-8" />
+			<meta name="viewport" content="width=device-width, initial-scale=1" />
+			<title>FlowLens Sessions</title>
+			<style>body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;background:#0b1220;color:#fff;padding:24px} .notice{background:#1f2937;padding:16px;border-radius:8px}</style>
+		</head>
+		<body>
+			<div class="notice">
+				<h2>FlowLens webview not built</h2>
+				<p>The webview bundle <code>dist/webview.js</code> was not found. Build the webview to view the panel.</p>
+				<p>Run: <code>npm install && node esbuild.js --production</code></p>
+			</div>
+		</body>
+	</html>`;
+					}
+			} catch (e) {
+					return `<!doctype html><html><body><pre style="color:#fff">Error preparing webview: ${String(e)}</pre></body></html>`;
 			}
-
-			function renderSessions(sessions) {
-				const root = document.getElementById('root');
-				root.innerHTML = '';
-				if (!sessions || sessions.length === 0) {
-					const empty = document.createElement('div');
-					empty.className = 'muted';
-					empty.textContent = 'No sessions yet. Capture a session using the command palette.';
-					root.appendChild(empty);
-					return;
-				}
-
-				sessions.forEach(s => {
-					root.appendChild(createSessionCard(s));
-				});
-			}
-
-			window.addEventListener('message', ev => {
-				const msg = ev.data;
-				if (msg.type === 'sessions') renderSessions(msg.data || []);
-				if (msg.type === 'deleted') {
-					// request updated list
-					if (vscode) vscode.postMessage({ type: 'ready' });
-				}
-			});
-
-			if (vscode) vscode.postMessage({ type: 'ready' });
-		</script>
-	</body>
-</html>`;
-}
+	}
