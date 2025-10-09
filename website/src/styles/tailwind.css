@@ -1,0 +1,182 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --glass: rgba(255,255,255,0.7);
+}
+
+/* Custom styles carried over from the original landing page */
+.gradient-text {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-gradient {
+  background: radial-gradient(ellipse at top, rgba(59, 130, 246, 0.08) 0%, transparent 60%),
+        radial-gradient(ellipse at bottom, rgba(37, 99, 235, 0.05) 0%, transparent 50%);
+}
+
+.glow {
+  box-shadow: 0 0 40px rgba(59, 130, 246, 0.15);
+}
+
+.card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 60px rgba(102, 126, 234, 0.2);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+.network-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.1;
+  background-image: 
+    linear-gradient(rgba(102, 126, 234, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(102, 126, 234, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+.code-snippet {
+  background: rgba(17, 24, 39, 0.8);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+}
+
+@keyframes draw-line {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.feature-icon {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(37, 99, 235, 0.08) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.testimonial-card {
+  background: rgba(17, 24, 39, 0.5);
+  border: 1px solid rgba(59, 130, 246, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.5rem;
+  }
+}
+
+/* VS Code mock UI styles */
+.vscode-mock .tabs .tab {
+  background: rgba(255,255,255,0.02);
+  color: #9CA3AF;
+}
+.vscode-mock .tabs .tab-active {
+  background: linear-gradient(90deg, rgba(59,130,246,0.06), rgba(37,99,235,0.04));
+  color: #E6F0FF;
+  border: 1px solid rgba(59,130,246,0.12);
+}
+.vscode-mock .editor-window {
+  min-height: 100px;
+  max-height: 220px;
+  overflow: auto;
+}
+.vscode-mock .code-line { white-space: pre-wrap; }
+.vscode-mock .terminal-mock { min-height: 36px; }
+
+/* checkbox style for left feature list */
+.check-box {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.01);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.check-box svg { color: transparent }
+.check-box.checked {
+  background: linear-gradient(135deg,#1e3a8a 0%, #2563eb 100%);
+  border-color: rgba(37,99,235,0.9);
+}
+.check-box.checked svg { color: white; stroke: white }
+
+/* mac-like window controls for vscode mock (visual only) */
+.vscode-mock .window-controls { display:flex; gap:8px; margin-bottom:8px }
+.vscode-mock .window-controls .dot { width:12px; height:12px; border-radius:999px }
+.vscode-mock .window-controls .dot.red { background:#ff5f56 }
+.vscode-mock .window-controls .dot.yellow { background:#ffbd2e }
+.vscode-mock .window-controls .dot.green { background:#27c93f }
+
+
