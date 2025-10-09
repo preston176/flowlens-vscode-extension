@@ -136,7 +136,7 @@ export function activate(context: vscode.ExtensionContext) {
 			{ enableScripts: true }
 		);
 
-		panel.webview.html = getWebviewContent();
+			panel.webview.html = await getWebviewContent(panel);
 
 		// When the webview requests sessions, send them
 		panel.webview.onDidReceiveMessage(async (msg) => {
@@ -193,65 +193,149 @@ export function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {}
 
-function getWebviewContent(): string {
+async function getWebviewContent(panel?: vscode.WebviewPanel): Promise<string> {
+		// If a bundled webview script exists in dist, load it via webview.asWebviewUri
+		try {
+				const fs = require('fs');
+				if (panel && fs.existsSync('dist/webview.js')) {
+						const webview = panel.webview;
+						const path = require('path');
+						const scriptUri = webview.asWebviewUri(vscode.Uri.file(path.join(__dirname, '..', 'dist', 'webview.js')));
+						const cssPath = path.join(__dirname, '..', 'dist', 'webview.css');
+						const cssUri = fs.existsSync(cssPath) ? webview.asWebviewUri(vscode.Uri.file(path.join(__dirname, '..', 'dist', 'webview.css'))) : null;
+						return `<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>FlowLens Sessions</title>
+		${cssUri ? `<link rel="stylesheet" href="${cssUri}">` : ''}
+	</head>
+	<body>
+		<div id="root"></div>
+		<script src="${scriptUri}"></script>
+	</body>
+</html>`;
+				}
+		} catch (e) {
+				// ignore and fall back to inline UI
+		}
+
 		return `<!doctype html>
 <html>
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>FlowLens Sessions</title>
-		<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-		<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-		<script src="https://cdn.tailwindcss.com"></script>
-		<style>body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }</style>
+		<style>
+			:root { --bg: #0b1220; --card: #0f1724; --muted: #94a3b8; --accent: #2563eb; }
+			body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background: var(--bg); color: #fff; margin:0; padding:20px; }
+			.card { background: rgba(15,23,36,0.75); padding:12px; border-radius:8px; }
+			.title { font-weight:600; font-size:16px; }
+			.muted { color: var(--muted); font-size:12px; }
+			.btn { border: none; color: white; padding:6px 10px; border-radius:6px; cursor:pointer; }
+			.btn-blue { background: var(--accent); margin-right:8px; }
+			.btn-red { background: #dc2626; }
+			.session { margin-bottom:12px; }
+			details { margin-top:8px; }
+			ul { margin-top:6px; }
+		</style>
 	</head>
-	<body class="bg-gray-900 text-white p-6">
+	<body>
 		<div id="root"></div>
 
 		<script>
-			const vscode = acquireVsCodeApi ? acquireVsCodeApi() : null;
+			const vscode = (typeof acquireVsCodeApi === 'function') ? acquireVsCodeApi() : null;
 
-			function el(name, props, ...children) {
-				return React.createElement(name, props, ...children);
-			}
+			function createSessionCard(s) {
+				const wrapper = document.createElement('div');
+				wrapper.className = 'session card';
 
-			function App() {
-				const [sessions, setSessions] = React.useState([]);
-				React.useEffect(() => {
-					window.addEventListener('message', ev => {
-						const msg = ev.data;
-						if (msg.type === 'sessions') setSessions(msg.data || []);
-						if (msg.type === 'deleted') setSessions(s => s.filter(x => x.id !== msg.id));
-					});
-					if (vscode) vscode.postMessage({ type: 'ready' });
-				}, []);
+				const top = document.createElement('div');
+				top.style.display = 'flex';
+				top.style.justifyContent = 'space-between';
 
-				if (!sessions || sessions.length === 0) {
-					return el('div', { className: 'text-gray-400' }, 'No sessions yet. Capture a session using the command palette.');
+				const info = document.createElement('div');
+				const title = document.createElement('div');
+				title.className = 'title';
+				title.textContent = s.title || 'Untitled';
+				info.appendChild(title);
+
+				const ts = document.createElement('div');
+				ts.className = 'muted';
+				ts.textContent = new Date(s.timestamp).toLocaleString();
+				info.appendChild(ts);
+
+				if (s.notes) {
+					const notes = document.createElement('div');
+					notes.style.marginTop = '6px';
+					notes.className = 'muted';
+					notes.textContent = s.notes;
+					info.appendChild(notes);
 				}
 
-				return el('div', { className: 'space-y-4' },
-					sessions.map(s => el('div', { key: s.id, className: 'p-4 rounded-lg bg-gray-800/60' },
-						el('div', { className: 'flex justify-between items-start' },
-							el('div', null,
-								el('div', { className: 'text-lg font-semibold' }, s.title || 'Untitled'),
-								el('div', { className: 'text-sm text-gray-400' }, new Date(s.timestamp).toLocaleString()),
-								s.notes ? el('div', { className: 'mt-2 text-sm text-gray-300' }, s.notes) : null
-							),
-							el('div', null,
-								el('button', { className: 'mr-2 px-3 py-1 bg-blue-600 rounded', onClick: () => vscode && vscode.postMessage({ type: 'resume', id: s.id }) }, 'Resume'),
-								el('button', { className: 'px-3 py-1 bg-red-600 rounded', onClick: () => vscode && vscode.postMessage({ type: 'delete', id: s.id }) }, 'Delete')
-							)
-						),
-						el('details', { className: 'mt-2 text-sm text-gray-300' },
-							el('summary', null, 'Editors (' + (s.editors ? s.editors.length : 0) + ')'),
-							el('ul', { className: 'list-disc ml-5 mt-2' }, (s.editors || []).map(function(e){ return el('li', { key: e.path }, e.path + (e.cursor ? '  - ' + (e.cursor.line + 1) + ':' + (e.cursor.col + 1) : '')); }))
-						)
-					))
-				);
+				const actions = document.createElement('div');
+				const resume = document.createElement('button');
+				resume.className = 'btn btn-blue';
+				resume.textContent = 'Resume';
+				resume.onclick = () => vscode && vscode.postMessage({ type: 'resume', id: s.id });
+
+				const del = document.createElement('button');
+				del.className = 'btn btn-red';
+				del.textContent = 'Delete';
+				del.onclick = () => vscode && vscode.postMessage({ type: 'delete', id: s.id });
+
+				actions.appendChild(resume);
+				actions.appendChild(del);
+
+				top.appendChild(info);
+				top.appendChild(actions);
+
+				wrapper.appendChild(top);
+
+				const details = document.createElement('details');
+				const summary = document.createElement('summary');
+				summary.textContent = 'Editors (' + ((s.editors && s.editors.length) || 0) + ')';
+				details.appendChild(summary);
+
+				const ul = document.createElement('ul');
+				(s.editors || []).forEach(e => {
+					const li = document.createElement('li');
+					li.textContent = e.path + (e.cursor ? '  - ' + (e.cursor.line + 1) + ':' + (e.cursor.col + 1) : '');
+					ul.appendChild(li);
+				});
+				details.appendChild(ul);
+				wrapper.appendChild(details);
+
+				return wrapper;
 			}
 
-			ReactDOM.render(React.createElement(App), document.getElementById('root'));
+			function renderSessions(sessions) {
+				const root = document.getElementById('root');
+				root.innerHTML = '';
+				if (!sessions || sessions.length === 0) {
+					const empty = document.createElement('div');
+					empty.className = 'muted';
+					empty.textContent = 'No sessions yet. Capture a session using the command palette.';
+					root.appendChild(empty);
+					return;
+				}
+
+				sessions.forEach(s => {
+					root.appendChild(createSessionCard(s));
+				});
+			}
+
+			window.addEventListener('message', ev => {
+				const msg = ev.data;
+				if (msg.type === 'sessions') renderSessions(msg.data || []);
+				if (msg.type === 'deleted') {
+					// request updated list
+					if (vscode) vscode.postMessage({ type: 'ready' });
+				}
+			});
+
+			if (vscode) vscode.postMessage({ type: 'ready' });
 		</script>
 	</body>
 </html>`;
