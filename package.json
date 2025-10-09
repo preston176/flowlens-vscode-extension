@@ -25,6 +25,11 @@
         "command": "FlowLens.showSessions",
         "title": "FlowLens: Show Sessions"
       }
+      ,
+      {
+        "command": "FlowLens.openSessionsPanel",
+        "title": "FlowLens: Open Sessions Panel"
+      }
     ]
   },
   "scripts": {
