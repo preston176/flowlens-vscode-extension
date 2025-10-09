@@ -158,3 +158,34 @@ For questions or partnership inquiries: hello@flowlens.example (placeholder).
 ## License
 
 This repository currently contains marketing and design assets for FlowLens. Code and assets are proprietary for now — contact us to discuss licensing.
+
+---
+
+## Build & Release (webview)
+
+The webview UI is bundled and shipped in `dist/` for offline use. To build the webview and the extension locally:
+
+1. Install dev dependencies:
+
+```bash
+npm install
+```
+
+2. Build the extension and webview (production):
+
+```bash
+node esbuild.js --production
+```
+
+This produces:
+- `dist/extension.js` — the compiled extension runtime.
+- `dist/webview.js` — the bundled Preact webview (IIFE).
+- `dist/webview.css` — compiled Tailwind CSS.
+
+3. Run the extension in the Extension Development Host (F5). Use the command palette:
+- `FlowLens: Capture Session` to capture state
+- `FlowLens: Open Sessions Panel` to open the bundled webview
+
+CI / Publishing
+
+We recommend adding a GitHub Actions workflow that installs dependencies, builds the webview, runs tests and (optionally) publishes the extension using an `VSCE_TOKEN` secret.
