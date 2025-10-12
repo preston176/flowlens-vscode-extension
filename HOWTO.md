@@ -1,21 +1,10 @@
-# FlowLens — How To Capture and Resume Your Coding Sessions
+# How To Use FlowLens to Capture and Resume Your Coding Sessions
 
-[![status](https://img.shields.io/badge/status-coming_soon-0ea5e9?style=for-the-badge&logo=clock)](./)
-[![target](https://img.shields.io/badge/target-VS%20Code-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white)](https://code.visualstudio.com/)
-[![privacy](https://img.shields.io/badge/privacy-local_first-10B981?style=for-the-badge&logo=lock&logoColor=white)](./)
-[![waitlist](https://img.shields.io/badge/waitlist-500%2B_devs-7C3AED?style=for-the-badge&logo=mailchimp&logoColor=white)](./)
-[![license](https://img.shields.io/badge/license-proprietary-6B7280?style=for-the-badge&logo=github&logoColor=white)](./)
-[!Website](https://flowlens-vscode-extension.vercel.app) | [How To Use](./HOWTO.md) | [Security](./SECURITY.md) | [Contributing](./CONTRIBUTING.md)
-
-> FlowLens helps you save your work context in Visual Studio Code and instantly resume where you left off. Capture your open files, terminals, git branch, and notes with one click.
-
----
+This guide explains how to use the FlowLens extension for Visual Studio Code to save your work context and quickly resume where you left off.
 
 ## Introduction
 
-FlowLens is a privacy-first extension for Visual Studio Code. It lets you capture your current coding session—including open files, cursor positions, terminal commands, git branch, and a short note—so you can return to your work exactly as you left it.
-
----
+FlowLens helps you remember what you were working on by saving your open files, terminals, git branch, and notes. With one click, you can restore your coding session and get back to work instantly.
 
 ## Prerequisites
 
@@ -23,9 +12,7 @@ FlowLens is a privacy-first extension for Visual Studio Code. It lets you captur
 - FlowLens extension installed and enabled
 - Basic familiarity with opening and closing files in VS Code
 
----
-
-## How To Use FlowLens
+## Steps
 
 ### 1. Capture Your Current Session
 
@@ -51,15 +38,11 @@ FlowLens is a privacy-first extension for Visual Studio Code. It lets you captur
 2. Click the **Delete** button next to that session.
 3. The session will be removed from your list.
 
----
-
 ## Expected Results
 
 - After capturing a session, it appears in the Sessions Panel with your title and note.
 - When you resume a session, your files and terminals are restored to the state they were in when you saved.
 - Deleted sessions are removed from the list and cannot be restored.
-
----
 
 ## Troubleshooting
 
@@ -67,34 +50,9 @@ FlowLens is a privacy-first extension for Visual Studio Code. It lets you captur
 - **Files not reopening:** If a file was moved or deleted after capturing, it may not reopen. Check your file paths.
 - **Extension not working:** Ensure FlowLens is enabled in the Extensions sidebar. Try reinstalling if problems persist.
 
----
-
 ## Additional Information
 
 - FlowLens only saves metadata (file paths, cursor positions, terminal commands, git branch, and notes). Your code is never uploaded.
 - All session data is stored locally on your machine by default.
 - You can add a short note to each session to help you remember why you paused.
 - For more details or updates, visit the FlowLens website or contact support.
-
----
-
-## Product Vision & Roadmap
-
-- One-click Resume: open the FlowLens panel and click Resume to restore a session.
-- Smart grouping: sessions are auto-grouped by activity, filenames, and commit messages (planned).
-- Quick notes: add a short "thought trail" to remind your future self why you paused.
-- Local-first and privacy-focused: your code is never uploaded.
-
-**Roadmap:**
-
-- [x] Landing page & waitlist
-- [ ] Private alpha — core capture & resume flow (local-only)
-- [ ] Encrypted sync across devices (opt-in)
-- [ ] Shareable sessions & team workflows (beta)
-- [ ] Editor integrations (deeper state restore, plugin ecosystem)
-
----
-
-## License
-
-This repository currently contains marketing and design assets for FlowLens. Code and assets are proprietary for now — contact us to discuss licensing.
