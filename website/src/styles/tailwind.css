@@ -1,3 +1,23 @@
+/* Full VS Code mockup for hero section */
+.vscode-mockup {
+  background: #1e1e1e;
+  box-shadow: 0 8px 40px 0 rgba(0,0,0,0.45);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+.vscode-mockup .window-controls {
+  gap: 8px;
+}
+.vscode-mockup .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  display: inline-block;
+}
+.vscode-mockup .dot.red { background: #ff5f56; }
+.vscode-mockup .dot.yellow { background: #ffbd2e; }
+.vscode-mockup .dot.green { background: #27c93f; }
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -48,9 +68,6 @@
   100% { background-position: 0% 50%; }
 }
 
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
 
 .animate-pulse-glow {
   animation: pulse-glow 3s ease-in-out infinite;

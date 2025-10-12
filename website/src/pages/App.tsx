@@ -27,13 +27,7 @@ export function App() {
         const anchors = Array.from(document.querySelectorAll('a[href^="#"]'))
         anchors.forEach(a => a.addEventListener('click', onClick))
 
-        // Parallax for hero
-        const hero = document.querySelector('.hero-gradient')
-        const onScroll = () => {
-            const scrolled = window.pageYOffset
-            if (hero) (hero as HTMLElement).style.transform = `translateY(${scrolled * 0.5}px)`
-        }
-        window.addEventListener('scroll', onScroll)
+
 
         // Intersection observer for cards
         const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -100px 0px' }
@@ -58,7 +52,7 @@ export function App() {
 
         return () => {
             anchors.forEach(a => a.removeEventListener('click', onClick))
-            window.removeEventListener('scroll', onScroll)
+
             observer.disconnect()
         }
     }, [])
@@ -204,17 +198,17 @@ export function App() {
                 <div class="absolute top-20 left-10 w-64 h-64 bg-blue-500/8 rounded-full blur-3xl animate-pulse-glow"></div>
                 <div class="absolute bottom-20 right-10 w-96 h-96 bg-blue-600/6 rounded-full blur-3xl animate-pulse-glow" style="animation-delay: 1.5s;"></div>
 
-                <div class="max-w-7xl mx-auto px-6 py-20 relative z-10 text-center">
+                <div class="max-w-7xl mx-auto px-6 py-20 relative z-10 flex flex-col items-center w-full">
                     <div class="inline-block mb-6 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full">
                         <span class="text-sm text-blue-300">✨ Your Coding Time Machine</span>
                     </div>
 
-                    <h1 class="hero-title text-6xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight">
+                    <h1 class="hero-title text-6xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight text-center">
                         Preserve Your Flow.<br />
                         <span class="gradient-text">Resume Where You Left Off.</span>
                     </h1>
 
-                    <p class="text-xl md:text-2xl text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed">
+                    <p class="text-xl md:text-2xl text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed text-center">
                         FlowLens restores your exact coding context — files, tabs, terminals, and even thought trails.
                     </p>
 
@@ -234,21 +228,75 @@ export function App() {
                         <p class="text-sm text-gray-500 mt-4">Join 500+ developers restoring their focus</p>
                     </div>
 
-                    <div class="relative max-w-5xl mx-auto animate-float">
-                        <div class="code-snippet rounded-2xl p-8 glow">
-                            <div class="flex items-center space-x-2 mb-6">
-                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                                <span class="ml-4 text-gray-400 text-sm">VS Code - FlowLens Active</span>
-                            </div>
-                            <div class="space-y-3 text-left font-mono text-sm">
-                                <div class="text-gray-500">// <span class="text-blue-400">Context Restored</span> - "Fixing API bug" 🔧</div>
-                                <div class="text-gray-300">📁 <span class="text-blue-400">api/routes/user.js</span> <span class="text-gray-600">(Line 42)</span></div>
-                                <div class="text-gray-300">📁 <span class="text-emerald-400">tests/user.test.js</span></div>
-                                <div class="text-gray-300">⚡ <span class="text-amber-400">Terminal:</span> <span class="text-gray-500">npm run test:watch</span></div>
-                                <div class="text-gray-300">🔍 <span class="text-slate-400">Last commit:</span> <span class="text-gray-500">"Add user validation"</span></div>
-                                <div class="mt-4 pt-4 border-t border-gray-700">/* Lines omitted */</div>
+                    {/* Product showcase: 1:1 VS Code mockup */}
+                    <div class="relative w-full max-w-5xl mx-auto" aria-label="VS Code product showcase">
+                        <div class="vscode-mockup border border-gray-800 rounded-xl shadow-2xl overflow-hidden bg-[#1e1e1e]" role="region" aria-label="Visual Studio Code Mockup">
+                            {/* Title bar */}
+                            <header class="flex items-center justify-between px-4 py-2 bg-[#23272e] border-b border-gray-800" aria-label="Window controls and title">
+                                <div class="window-controls flex items-center gap-2" aria-label="Window controls">
+                                    <span class="dot red" aria-label="Close"></span>
+                                    <span class="dot yellow" aria-label="Minimize"></span>
+                                    <span class="dot green" aria-label="Zoom"></span>
+                                </div>
+                                <div class="text-xs text-gray-300 font-mono tracking-wide" aria-label="Window title">Visual Studio Code - FlowLens</div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-4 h-4 bg-gray-700 rounded" aria-hidden="true"></span>
+                                </div>
+                            </header>
+                            <div class="flex h-[440px]">
+                                {/* Activity bar */}
+                                <nav class="flex flex-col items-center w-12 bg-[#23272e] border-r border-gray-800 py-2 space-y-2" aria-label="Activity bar">
+                                    <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-[#2c313a] focus:outline-none" aria-label="Explorer">
+                                        <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h3m10-12h3a2 2 0 012 2v10a2 2 0 01-2 2h-3M7 7V5a2 2 0 012-2h6a2 2 0 012 2v2" /></svg>
+                                    </button>
+                                    <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-[#2c313a] focus:outline-none" aria-label="Search">
+                                        <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2" /><path d="M12 8v4l3 3" stroke-width="2" /></svg>
+                                    </button>
+                                    <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-[#2c313a] focus:outline-none" aria-label="Source Control">
+                                        <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" stroke-width="2" /></svg>
+                                    </button>
+                                    <button class="w-8 h-8 flex items-center justify-center rounded hover:bg-[#2c313a] focus:outline-none" aria-label="Run & Debug">
+                                        <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6v6l4 2" stroke-width="2" /></svg>
+                                    </button>
+                                </nav>
+                                {/* Side bar */}
+                                <aside class="w-52 bg-[#23272e] border-r border-gray-800 p-3 flex flex-col" aria-label="Side bar">
+                                    <div class="text-xs text-gray-400 font-mono mb-2">EXPLORER</div>
+                                    <div class="text-gray-200 text-sm font-mono bg-[#23272e] rounded px-2 py-1 mb-1">flowlens/</div>
+                                    <div class="text-gray-400 text-xs font-mono pl-4">src/</div>
+                                    <div class="text-blue-400 text-xs font-mono pl-8">extension.ts</div>
+                                    <div class="text-emerald-400 text-xs font-mono pl-8">webview.tsx</div>
+                                    <div class="text-gray-400 text-xs font-mono pl-4">website/</div>
+                                    <div class="text-blue-400 text-xs font-mono pl-8">App.tsx</div>
+                                    <div class="text-gray-400 text-xs font-mono pl-4">test/</div>
+                                    <div class="text-emerald-400 text-xs font-mono pl-8">extension.test.ts</div>
+                                </aside>
+                                {/* Editor group */}
+                                <section class="flex-1 flex flex-col bg-[#1e1e1e]" aria-label="Editor group">
+                                    <div class="flex items-center h-10 border-b border-gray-800 bg-[#23272e] px-4" role="tablist" aria-label="Editor tabs">
+                                        <button class="flex items-center gap-2 px-3 py-1 rounded-t bg-[#23272e] border-b-2 border-blue-500 focus:outline-none" aria-selected="true" aria-label="App.tsx">
+                                            <span class="w-3 h-3 rounded-full bg-blue-400"></span>
+                                            <span class="text-xs text-gray-200 font-mono">App.tsx</span>
+                                        </button>
+                                        <button class="flex items-center gap-2 px-3 py-1 rounded-t ml-2 bg-[#23272e] focus:outline-none" aria-selected="false" aria-label="extension.ts">
+                                            <span class="w-3 h-3 rounded-full bg-gray-500"></span>
+                                            <span class="text-xs text-gray-400 font-mono">extension.ts</span>
+                                        </button>
+                                    </div>
+                                    <div class="flex-1 px-6 py-4 font-mono text-sm text-gray-200 bg-[#1e1e1e]" aria-label="Editor content">
+                                        <div class="text-gray-500">// <span class="text-blue-400">Context Restored</span> - "Fixing API bug" 🔧</div>
+                                        <div>function handleRequest(req, res) {'{'}</div>
+                                        <div class="pl-4 text-gray-400">// ...captured cursor position (line 42)</div>
+                                        <div>{'}'}</div>
+                                        <div class="mt-4 pt-4 border-t border-gray-700">/* Lines omitted */</div>
+                                    </div>
+                                    {/* Terminal */}
+                                    <footer class="border-t border-gray-800 bg-[#18181b] px-4 py-2" aria-label="Terminal panel">
+                                        <div class="text-xs text-gray-400 font-mono mb-1">TERMINAL</div>
+                                        <div class="font-mono text-xs text-green-400">$ npm run test:watch</div>
+                                        <div class="font-mono text-xs text-gray-300">✔ Tests running</div>
+                                    </footer>
+                                </section>
                             </div>
                         </div>
                     </div>
