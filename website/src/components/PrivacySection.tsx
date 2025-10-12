@@ -12,17 +12,17 @@ export function PrivacySection() {
                 <div class="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
                     <div class="p-6 rounded-xl bg-gray-900/50 border border-gray-800">
                         <div class="text-3xl mb-3">🔐</div>
-                        <h4 class="font-bold mb-2">Local First</h4>
+                        <h3 class="font-bold mb-2">Local First</h3>
                         <p class="text-sm text-gray-400">All data stored locally on your device</p>
                     </div>
                     <div class="p-6 rounded-xl bg-gray-900/50 border border-gray-800">
                         <div class="text-3xl mb-3">🚫</div>
-                        <h4 class="font-bold mb-2">No Tracking</h4>
+                        <h3 class="font-bold mb-2">No Tracking</h3>
                         <p class="text-sm text-gray-400">Zero telemetry or analytics collected</p>
                     </div>
                     <div class="p-6 rounded-xl bg-gray-900/50 border border-gray-800">
                         <div class="text-3xl mb-3">🔑</div>
-                        <h4 class="font-bold mb-2">Encrypted</h4>
+                        <h3 class="font-bold mb-2">Encrypted</h3>
                         <p class="text-sm text-gray-400">End-to-end encryption for sync</p>
                     </div>
                 </div>

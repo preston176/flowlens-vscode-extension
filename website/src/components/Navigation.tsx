@@ -1,23 +1,11 @@
+import { h } from 'preact';
 
 export function Navigation() {
     return (
-        <nav class="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-lg border-b border-gray-800/50" style={{ overflow: 'visible' }}>
-            {/* Spotlight effect */}
-            <div
-                class="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 z-[-1]"
-                style={{
-                    width: '600px',
-                    height: '220px',
-                    background: 'radial-gradient(ellipse at center, rgba(59,130,246,0.25) 0%, rgba(59,130,246,0.10) 60%, transparent 100%)',
-                    filter: 'blur(32px)',
-                    opacity: 0.85,
-                    transition: 'opacity 0.4s',
-                }}
-                aria-hidden="true"
-            />
+        <nav class="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-lg border-b border-gray-800/50">
             <div class="max-w-7xl mx-auto px-6 py-4">
                 <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-2">
+                    <a href="#" class="flex items-center space-x-2" aria-label="FlowLens Home">
                         <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
                             <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -25,7 +13,7 @@ export function Navigation() {
                             </svg>
                         </div>
                         <span class="text-xl font-bold gradient-text">FlowLens</span>
-                    </div>
+                    </a>
                     <div class="hidden md:flex items-center space-x-8">
                         <a href="#how-it-works" class="text-gray-300 hover:text-white transition">How It Works</a>
                         <a href="#privacy" class="text-gray-300 hover:text-white transition">Privacy</a>

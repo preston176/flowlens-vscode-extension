@@ -11,25 +11,25 @@ export function Footer() {
                         </div>
                         <div>
                             <div class="text-lg font-bold gradient-text">FlowLens</div>
-                            <div class="text-xs text-gray-500">Built by developers who hate losing flow.</div>
+                            <div class="text-xs text-gray-200">Built by developers who hate losing flow.</div>
                         </div>
                     </div>
                     <div class="flex items-center space-x-6">
-                        <a href="#" class="text-gray-400 hover:text-white transition">
+                        <a href="#" class="text-gray-200 hover:text-white transition" aria-label="Twitter">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"></svg>
                         </a>
-                        <a href="#" class="text-gray-400 hover:text-white transition">
+                        <a href="#" class="text-gray-200 hover:text-white transition" aria-label="GitHub">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"></svg>
                         </a>
                     </div>
-                    <div class="flex items-center space-x-6 text-sm text-gray-500">
+                    <div class="flex items-center space-x-6 text-sm text-gray-200">
                         <a href="#" class="hover:text-white transition">Privacy</a>
                         <a href="#" class="hover:text-white transition">Terms</a>
                         <a href="#" class="hover:text-white transition">Contact</a>
                     </div>
                 </div>
-                <div class="mt-12 pt-8 border-t border-gray-800 text-center text-sm text-gray-500">
-                    <p>© 2025 FlowLens. All rights reserved. Your coding time machine.</p>
+                <div class="mt-12 pt-8 border-t border-gray-800 text-center text-sm text-gray-200">
+                    <p>© 2025 FlowLens. All rights reserved. Your coding time machine. 🚀</p>
                 </div>
             </div>
         </footer>
