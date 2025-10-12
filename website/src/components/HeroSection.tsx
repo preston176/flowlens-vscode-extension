@@ -21,7 +21,7 @@ export function HeroSection({ buttonStateHero, handleSubmit, getWaitlistCount }:
                     <span class="gradient-text">Resume Where You Left Off.</span>
                 </h1>
                 <p class="text-xl md:text-2xl text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed text-center">
-                    FlowLens restores your coding context with one click. No more lost time, no more distractions.
+                    FlowLens restores your coding context with one click. <br /> No more lost time, no more distractions.
                 </p>
                 <div class="max-w-md mx-auto mb-12">
                     <form class="flex flex-col sm:flex-row gap-4" onSubmit={(e) => handleSubmit(e, 'hero')}>
