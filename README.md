@@ -1,100 +1,170 @@
-# FlowLens — How To Capture and Resume Your Coding Sessions
+# 🌀 FlowLens — Instantly Resume Your Coding Flow
 
-[![status](https://img.shields.io/badge/status-coming_soon-0ea5e9?style=for-the-badge&logo=clock)](./)
-[![target](https://img.shields.io/badge/target-VS%20Code-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white)](https://code.visualstudio.com/)
-[![privacy](https://img.shields.io/badge/privacy-local_first-10B981?style=for-the-badge&logo=lock&logoColor=white)](./)
-[![waitlist](https://img.shields.io/badge/waitlist-500%2B_devs-7C3AED?style=for-the-badge&logo=mailchimp&logoColor=white)](./)
-[![license](https://img.shields.io/badge/license-proprietary-6B7280?style=for-the-badge&logo=github&logoColor=white)](./)
-[!Website](https://flowlens-vscode-extension.vercel.app) | [How To Use](./HOWTO.md) | [Security](./SECURITY.md) | [Contributing](./CONTRIBUTING.md)
+[![target](https://img.shields.io/badge/Target-VS%20Code-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white)](https://code.visualstudio.com/)
+[![privacy](https://img.shields.io/badge/Privacy-Local_First-10B981?style=for-the-badge&logo=lock&logoColor=white)](./)
+[![waitlist](https://img.shields.io/badge/Waitlist-29%2B_Developers-7C3AED?style=for-the-badge&logo=mailchimp&logoColor=white)](./)
 
-> FlowLens helps you save your work context in Visual Studio Code and instantly resume where you left off. Capture your open files, terminals, git branch, and notes with one click.
+  
+![Screenshot](.docs/screenshot.png)
+  
 
----
+<p align="center">
+  <b>Website:</b> <a href="https://flowlens-vscode-extension.vercel.app">flowlens-vscode-extension.vercel.app</a> &nbsp;|&nbsp;
+  <b><a href="./HOWTO.md">How To Use</a></b> &nbsp;|&nbsp;
+  <b><a href="./SECURITY.md">Security</a></b> &nbsp;|&nbsp;
+  <b><a href="./CONTRIBUTING.md">Contributing</a></b>
+</p>
 
-## Introduction
-
-FlowLens is a privacy-first extension for Visual Studio Code. It lets you capture your current coding session—including open files, cursor positions, terminal commands, git branch, and a short note—so you can return to your work exactly as you left it.
-
----
-
-## Prerequisites
-
-- Visual Studio Code installed on your computer
-- FlowLens extension installed and enabled
-- Basic familiarity with opening and closing files in VS Code
+> **FlowLens** helps you save your work context in Visual Studio Code and instantly resume where you left off — open files, terminals, git branch, and notes — all restored with one click.
 
 ---
 
-## How To Use FlowLens
+## 📘 Table of Contents
 
-### 1. Capture Your Current Session
-
-1. Open Visual Studio Code and work as usual (open files, run terminals, make changes).
-2. When you want to save your current work context, press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (Mac) to open the Command Palette.
-3. Type `FlowLens: Capture Session` and select it from the list.
-4. Enter a short title for your session (for example, "Fixing API bug").
-5. (Optional) Add a note to remind yourself what you were doing.
-6. You will see a confirmation message that your session was captured.
-
-### 2. View and Resume a Saved Session
-
-1. Press `Ctrl+Shift+P` or `Cmd+Shift+P` to open the Command Palette.
-2. Type `FlowLens: Open Sessions Panel` and select it.
-3. The FlowLens Sessions Panel will open, showing a list of your saved sessions.
-4. Use the search bar at the top to find a session by title, note, file name, or terminal command.
-5. Click the **Resume** button next to the session you want to restore.
-6. VS Code will reopen your files, set your cursor positions, and restore your work context.
-
-### 3. Delete a Session
-
-1. In the FlowLens Sessions Panel, find the session you want to remove.
-2. Click the **Delete** button next to that session.
-3. The session will be removed from your list.
+1. [What is FlowLens?](#-what-is-flowlens)
+2. [Demo](#-demo)
+3. [Prerequisites](#-prerequisites)
+4. [How To Use FlowLens](#-how-to-use-flowlens)
+   - [Capture Your Current Session](#capture-your-current-session)
+   - [View and Resume a Saved Session](#view-and-resume-a-saved-session)
+   - [Delete a Session](#delete-a-session)
+5. [Expected Results](#-expected-results)
+6. [Troubleshooting](#-troubleshooting)
+7. [Additional Information](#-additional-information)
+8. [Product Vision & Roadmap](#-product-vision--roadmap)
+9. [License](#-license)
+10. [Contributing](#-contributing)
 
 ---
 
-## Expected Results
+## ✨ What is FlowLens?
 
-- After capturing a session, it appears in the Sessions Panel with your title and note.
-- When you resume a session, your files and terminals are restored to the state they were in when you saved.
-- Deleted sessions are removed from the list and cannot be restored.
+**FlowLens** is a privacy-first extension for Visual Studio Code that helps developers capture and restore their coding sessions.
 
----
+Each session snapshot includes:
+- Open files and cursor positions  
+- Terminal commands and state  
+- Active git branch and commit  
+- Optional short notes  
 
-## Troubleshooting
-
-- **Sessions not appearing:** Make sure you have captured at least one session. Try reloading VS Code if the panel is blank.
-- **Files not reopening:** If a file was moved or deleted after capturing, it may not reopen. Check your file paths.
-- **Extension not working:** Ensure FlowLens is enabled in the Extensions sidebar. Try reinstalling if problems persist.
+When you return, FlowLens restores your exact editor layout, terminal setup, and focus — so you can pick up right where you left off.
 
 ---
 
-## Additional Information
+## 📸 Demo
 
-- FlowLens only saves metadata (file paths, cursor positions, terminal commands, git branch, and notes). Your code is never uploaded.
-- All session data is stored locally on your machine by default.
-- You can add a short note to each session to help you remember why you paused.
-- For more details or updates, visit the FlowLens website or contact support.
 
----
+![Screenshot](.docs/screenshot.png)
 
-## Product Vision & Roadmap
+### Navigate Your Sessions Effortlessly
 
-- One-click Resume: open the FlowLens panel and click Resume to restore a session.
-- Smart grouping: sessions are auto-grouped by activity, filenames, and commit messages (planned).
-- Quick notes: add a short "thought trail" to remind your future self why you paused.
-- Local-first and privacy-focused: your code is never uploaded.
+[!Screenshot2](.docs/Screenshot2.png)
 
-**Roadmap:**
+### Quickly Jump Back Into Flow
 
-- [x] Landing page & waitlist
-- [ ] Private alpha — core capture & resume flow (local-only)
-- [ ] Encrypted sync across devices (opt-in)
-- [ ] Shareable sessions & team workflows (beta)
-- [ ] Editor integrations (deeper state restore, plugin ecosystem)
+![Screenshot3](.docs/Screenshot2.png)
+
 
 ---
 
-## License
+## 🛠️ Prerequisites
 
-This repository currently contains marketing and design assets for FlowLens. Code and assets are proprietary for now — contact us to discuss licensing.
+- [Visual Studio Code](https://code.visualstudio.com/) installed on your computer  
+- FlowLens extension installed and enabled  
+- Basic familiarity with VS Code’s Command Palette  
+
+---
+
+## 🧭 How To Use FlowLens
+
+### 🪄 Capture Your Current Session
+
+1. Work as usual — open files, terminals, etc.  
+2. Press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> (Windows/Linux) or <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> (Mac).  
+3. Search for **`FlowLens: Capture Session`** and select it.  
+4. Enter a short title (e.g. *“Fixing API Bug”*).  
+5. Optionally, add a quick note to describe what you were doing.  
+6. A success message confirms the capture.
+
+### 🚀 View and Resume a Saved Session
+
+1. Open the Command Palette again.  
+2. Search for **`FlowLens: Open Sessions Panel`**.  
+3. Browse your saved sessions in the panel.  
+4. Use the search bar to filter by title, note, or file name.  
+5. Click **Resume** next to any session to instantly restore your environment.
+
+### 🗑️ Delete a Session
+
+1. Open the **FlowLens Sessions Panel**.  
+2. Locate the session you want to remove.  
+3. Click **Delete** to permanently remove it.
+
+---
+
+## ✅ Expected Results
+
+- Saved sessions appear in the panel with your title and notes.  
+- Resuming restores your files, terminals, and layout.  
+- Deleted sessions are removed immediately and cannot be recovered.  
+
+---
+
+## 🧩 Troubleshooting
+
+| Issue | Possible Cause | Solution |
+|-------|----------------|-----------|
+| Sessions not appearing | No sessions captured yet | Capture a session and reload VS Code |
+| Files not reopening | File moved or deleted | Check file paths and ensure access |
+| Extension not working | Disabled or corrupt install | Re-enable or reinstall FlowLens |
+
+---
+
+## 💡 Additional Information
+
+- FlowLens **never uploads your code** — only lightweight metadata (file paths, positions, git branch, notes).  
+- All data is stored **locally** on your machine by default.  
+- Optional sync (coming soon) will be end-to-end encrypted and fully opt-in.  
+- Use notes to leave a “thought trail” for your future self.  
+
+For updates or support, visit the [official website](https://flowlens-vscode-extension.vercel.app).
+
+---
+
+## 🛤️ Product Vision & Roadmap
+
+**Guiding Principles**
+- 🧠 *Focus-first:* Reduce mental overhead of restarting work.  
+- 🔒 *Private by design:* No code content ever leaves your device.  
+- ⚡ *Fast and lightweight:* Restores sessions instantly.  
+- 🧩 *Cross-editor future:* VS Code first; JetBrains, Neovim, and Sublime next.
+
+**Roadmap**
+- [x] Landing page & waitlist  
+- [ ] Private alpha — core capture & resume flow (local-only)  
+- [ ] Encrypted cross-device sync (opt-in)  
+- [ ] Team workflows and shareable sessions (beta)  
+- [ ] Deep editor integrations & plugin ecosystem  
+
+---
+
+## ⚖️ License
+
+This repository currently contains marketing and design assets for FlowLens.  
+All code and assets are proprietary at this stage.  
+
+**© 2025 FlowLens Team. All rights reserved.**
+
+---
+
+## 🤝 Contributing
+
+We welcome early feedback, ideas, and collaboration!  
+Please read our [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
+
+---
+
+<p align="center">
+  <sub>Built by developers obsessed with flow, focus, and frictionless coding.</sub><br/>
+  <sub>Inspired by tools like Linear, Notion, and Apple’s design simplicity.</sub>
+</p>
