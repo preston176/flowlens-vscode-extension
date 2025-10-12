@@ -29,7 +29,7 @@ export function Footer() {
                     </div>
                 </div>
                 <div class="mt-12 pt-8 border-t border-gray-800 text-center text-sm text-gray-500">
-                    <p>© 2025 FlowLens. All rights reserved. Your coding time machine. 🚀</p>
+                    <p>© 2025 FlowLens. All rights reserved. Your coding time machine.</p>
                 </div>
             </div>
         </footer>

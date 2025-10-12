@@ -1,7 +1,7 @@
 
 export function Navigation() {
     return (
-        <nav class="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-lg border-b border-gray-800/50" style={{overflow: 'visible'}}>
+        <nav class="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-lg border-b border-gray-800/50" style={{ overflow: 'visible' }}>
             {/* Spotlight effect */}
             <div
                 class="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 z-[-1]"
