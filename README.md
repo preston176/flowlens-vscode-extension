@@ -5,7 +5,7 @@
 [![waitlist](https://img.shields.io/badge/Waitlist-29%2B_Developers-7C3AED?style=for-the-badge&logo=mailchimp&logoColor=white)](./)
 
   
-![Screenshot](./.docs/screenshot.png)
+![Screenshot](.docs/Screenshot.png)
   
 
 <p align="center">
@@ -55,15 +55,15 @@ When you return, FlowLens restores your exact editor layout, terminal setup, and
 ## 📸 Demo
 
 
-![Screenshot](./docs/screenshot.png)
+![Screenshot](.docs/Screenshot.png)
 
 ### Navigate Your Sessions Effortlessly
 
-![Screenshot2](./docs/screenshot2.png)
+![Screenshot2](.docs/Screenshot2.png)
 
 ### Quickly Jump Back Into Flow
 
-![Screenshot3](./docs/screenshot3.png)
+![Screenshot3](.docs/Screenshot3.png)
 
 
 ---
