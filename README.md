@@ -9,7 +9,7 @@
   
 
 <p align="center">
-  <b>Website:</b> <a href="https://flowlens-vscode-extension.vercel.app">flowlens-vscode-extension.vercel.app</a> &nbsp;|&nbsp;
+  <b>Website:</b> <a href="https://flowlens-vscode.vercel.app">flowlens-vscode.vercel.app</a> &nbsp;|&nbsp;
   <b><a href="./HOWTO.md">How To Use</a></b> &nbsp;|&nbsp;
   <b><a href="./SECURITY.md">Security</a></b> &nbsp;|&nbsp;
   <b><a href="./CONTRIBUTING.md">Contributing</a></b>
@@ -128,7 +128,7 @@ When you return, FlowLens restores your exact editor layout, terminal setup, and
 - Optional sync (coming soon) will be end-to-end encrypted and fully opt-in.  
 - Use notes to leave a “thought trail” for your future self.  
 
-For updates or support, visit the [official website](https://flowlens-vscode-extension.vercel.app).
+For updates or support, visit the [official website](https://flowlens-vscode.vercel.app).
 
 ---
 
