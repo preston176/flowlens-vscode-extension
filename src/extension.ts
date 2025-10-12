@@ -194,48 +194,134 @@ export function activate(context: vscode.ExtensionContext) {
 export function deactivate() {}
 
 async function getWebviewContent(panel?: vscode.WebviewPanel): Promise<string> {
-			// Require local bundled webview assets (dist/webview.js). If missing, show an informative page.
-			try {
-					const fs = require('fs');
-					const path = require('path');
-					if (panel && fs.existsSync(path.join(__dirname, '..', 'dist', 'webview.js'))) {
-							const webview = panel.webview;
-							const scriptUri = webview.asWebviewUri(vscode.Uri.file(path.join(__dirname, '..', 'dist', 'webview.js')));
-							const cssPath = path.join(__dirname, '..', 'dist', 'webview.css');
-							const cssUri = fs.existsSync(cssPath) ? webview.asWebviewUri(vscode.Uri.file(cssPath)) : null;
-							return `<!doctype html>
-	<html>
-		<head>
-			<meta charset="utf-8" />
-			<meta name="viewport" content="width=device-width, initial-scale=1" />
-			<title>FlowLens Sessions</title>
-			${cssUri ? `<link rel="stylesheet" href="${cssUri}">` : ''}
-		</head>
-		<body>
-			<div id="root"></div>
-			<script src="${scriptUri}"></script>
-		</body>
-	</html>`;
-					} else {
-							// Informative page telling developer to build the webview
-							return `<!doctype html>
-	<html>
-		<head>
-			<meta charset="utf-8" />
-			<meta name="viewport" content="width=device-width, initial-scale=1" />
-			<title>FlowLens Sessions</title>
-			<style>body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;background:#0b1220;color:#fff;padding:24px} .notice{background:#1f2937;padding:16px;border-radius:8px}</style>
-		</head>
-		<body>
-			<div class="notice">
-				<h2>FlowLens webview not built</h2>
-				<p>The webview bundle <code>dist/webview.js</code> was not found. Build the webview to view the panel.</p>
-				<p>Run: <code>npm install && node esbuild.js --production</code></p>
-			</div>
-		</body>
-	</html>`;
-					}
-			} catch (e) {
-					return `<!doctype html><html><body><pre style="color:#fff">Error preparing webview: ${String(e)}</pre></body></html>`;
-			}
+		// Simple HTML/JS webview using VS Code Webview UI Toolkit and plain DOM
+		// https://github.com/microsoft/vscode-webview-ui-toolkit
+		// No dependency on dist/webview.js
+			const toolkitUri = panel?.webview.asWebviewUri(vscode.Uri.joinPath(
+					vscode.Uri.file(__dirname),
+					'..',
+					'node_modules',
+					'@vscode',
+					'webview-ui-toolkit',
+					'dist',
+					'toolkit.js',
+			));
+			// Return as a single string literal to avoid TypeScript parsing errors
+			   return [
+			   '<!DOCTYPE html>',
+			   '<html lang="en">',
+			   '<head>',
+			   '  <meta charset="UTF-8">',
+			   '  <meta name="viewport" content="width=device-width, initial-scale=1.0">',
+			   '  <title>FlowLens Sessions</title>',
+			   `  <script type="module" src="${toolkitUri}"></script>`,
+			   '  <style>',
+			   '    body { background: #0b1220; color: #fff; font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial; margin: 0; padding: 0; }',
+			   '    .container { max-width: 600px; margin: 40px auto; background: #181c24; border-radius: 12px; box-shadow: 0 4px 32px #0004; padding: 32px 24px; }',
+			   '    h1 { font-size: 2rem; margin-bottom: 1.5rem; }',
+			   '    .search-bar { display: flex; align-items: center; margin-bottom: 1.5rem; gap: 0.5rem; }',
+			   '    .search-input { flex: 1; padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid #23272e; background: #23272e; color: #fff; font-size: 1rem; outline: none; transition: border 0.2s; }',
+			   '    .search-input:focus { border: 1.5px solid #388bfd; background: #23272e; }',
+			   '    .session { background: #23272e; border-radius: 8px; margin-bottom: 1rem; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: flex-start; }',
+			   '    .session-info { flex: 1; }',
+			   '    .session-title { font-weight: 600; font-size: 1.1rem; }',
+			   '    .session-meta { color: #a0aec0; font-size: 0.95rem; margin-bottom: 0.5rem; }',
+			   '    .session-notes { color: #e0e7ef; font-size: 0.95rem; margin-bottom: 0.5rem; }',
+			   '    .session-actions { display: flex; flex-direction: column; gap: 0.5rem; min-width: 110px; }',
+			   '    .session-editors { color: #b5cdfa; font-size: 0.92rem; margin-top: 0.5rem; }',
+			   '    .empty { color: #7dd3fc; text-align: center; margin: 2rem 0; }',
+			   '    vscode-button, button {',
+			   '      font-size: 1rem;',
+			   '      border-radius: 6px;',
+			   '      padding: 0.45rem 1.1rem;',
+			   '      font-weight: 500;',
+			   '      margin: 0;',
+			   '      box-shadow: none;',
+			   '      transition: background 0.15s, color 0.15s, border 0.15s;',
+			   '    }',
+			   '    vscode-button[appearance="primary"] { background: #388bfd; color: #fff; border: none; }',
+			   '    vscode-button[appearance="primary"]:hover, vscode-button[appearance="primary"]:focus { background: #2563eb; color: #fff; }',
+			   '    vscode-button[appearance="secondary"] { background: #23272e; color: #b5cdfa; border: 1px solid #3b4252; }',
+			   '    vscode-button[appearance="secondary"]:hover, vscode-button[appearance="secondary"]:focus { background: #1e222a; color: #fff; border: 1.5px solid #388bfd; }',
+			   '  </style>',
+			   '</head>',
+			   '<body>',
+			   '  <div class="container">',
+			   '    <h1>FlowLens Sessions</h1>',
+			   '    <div class="search-bar">',
+			   '      <input id="search" class="search-input" type="text" placeholder="Search sessions, notes, files, terminals..." autocomplete="off" spellcheck="false" />',
+			   '    </div>',
+			   '    <div id="sessions"></div>',
+			   '    <div id="empty" class="empty" style="display:none">No sessions yet. Use <b>Capture Session</b> to save your context.</div>',
+			   '  </div>',
+			   '  <script type="module">',
+			   '    const vscode = acquireVsCodeApi();',
+			   '    let allSessions = [];',
+			   '    function filterSessions(query) {',
+			   '      if (!query) return allSessions;',
+			   '      const q = query.toLowerCase();',
+			   '      return allSessions.filter(session => {',
+			   '        if ((session.title && session.title.toLowerCase().includes(q)) ||',
+			   '            (session.notes && session.notes.toLowerCase().includes(q)) ||',
+			   '            (session.editors && session.editors.some(e => e.path && e.path.toLowerCase().includes(q))) ||',
+			   '            (session.terminals && session.terminals.some(t => (t.name && t.name.toLowerCase().includes(q)) || (t.lastCommand && t.lastCommand.toLowerCase().includes(q))))',
+			   '        ) return true;',
+			   '        return false;',
+			   '      });',
+			   '    }',
+			   '    function renderSessions(sessions) {',
+			   '      const root = document.getElementById("sessions");',
+			   '      root.innerHTML = "";',
+			   '      if (!sessions || sessions.length === 0) {',
+			   '        document.getElementById("empty").style.display = "";',
+			   '        return;',
+			   '      }',
+			   '      document.getElementById("empty").style.display = "none";',
+			   '      sessions.forEach(session => {',
+			   '        const div = document.createElement("div");',
+			   '        div.className = "session";',
+			   '        div.innerHTML = ',
+			   '          `<div class=\"session-info\">` +',
+			   '            `<div class=\"session-title\">${session.title || "Untitled"}</div>` +',
+			   '            `<div class=\"session-meta\">${new Date(session.timestamp).toLocaleString()}</div>` +',
+			   '            (session.notes ? `<div class=\"session-notes\">${session.notes}</div>` : "") +',
+			   '            `<div class=\"session-editors\">${(session.editors||[]).map(e => `${e.path}${e.cursor ? ` (${e.cursor.line+1}:${e.cursor.col+1})` : ""}`).join("<br>")}</div>` +',
+			   '          `</div>` +',
+			   '          `<div class=\"session-actions\">` +',
+			   '            `<vscode-button appearance=\"primary\" data-id=\"${session.id}\" data-action=\"resume\">Resume</vscode-button>` +',
+			   '            `<vscode-button appearance=\"secondary\" data-id=\"${session.id}\" data-action=\"delete\">Delete</vscode-button>` +',
+			   '          `</div>`;',
+			   '        root.appendChild(div);',
+			   '      });',
+			   '      root.querySelectorAll("vscode-button").forEach(btn => {',
+			   '        btn.addEventListener("click", e => {',
+			   '          const id = btn.getAttribute("data-id");',
+			   '          const action = btn.getAttribute("data-action");',
+			   '          vscode.postMessage({ type: action, id });',
+			   '        });',
+			   '      });',
+			   '    }',
+			   '    window.addEventListener("message", event => {',
+			   '      if (event.data && event.data.type === "sessions") {',
+			   '        allSessions = event.data.data;',
+			   '        const searchVal = document.getElementById("search").value;',
+			   '        renderSessions(filterSessions(searchVal));',
+			   '      }',
+			   '      if (event.data && event.data.type === "deleted") {',
+			   '        // Remove deleted session from UI',
+			   '        allSessions = allSessions.filter(s => s.id !== event.data.id);',
+			   '        const searchVal = document.getElementById("search").value;',
+			   '        renderSessions(filterSessions(searchVal));',
+			   '      }',
+			   '    });',
+			   '    document.getElementById("search").addEventListener("input", e => {',
+			   '      const val = e.target.value;',
+			   '      renderSessions(filterSessions(val));',
+			   '    });',
+			   '    // Request sessions on load',
+			   '    vscode.postMessage({ type: "ready" });',
+			   '  </script>',
+			   '</body>',
+			   '</html>'
+		   ].join('\n');
 	}
