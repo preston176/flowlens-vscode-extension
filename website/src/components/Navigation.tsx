@@ -1,8 +1,20 @@
-import { h } from 'preact';
 
 export function Navigation() {
     return (
-        <nav class="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-lg border-b border-gray-800/50">
+        <nav class="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-lg border-b border-gray-800/50" style={{overflow: 'visible'}}>
+            {/* Spotlight effect */}
+            <div
+                class="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 z-[-1]"
+                style={{
+                    width: '600px',
+                    height: '220px',
+                    background: 'radial-gradient(ellipse at center, rgba(59,130,246,0.25) 0%, rgba(59,130,246,0.10) 60%, transparent 100%)',
+                    filter: 'blur(32px)',
+                    opacity: 0.85,
+                    transition: 'opacity 0.4s',
+                }}
+                aria-hidden="true"
+            />
             <div class="max-w-7xl mx-auto px-6 py-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-2">
