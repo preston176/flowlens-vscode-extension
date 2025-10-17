@@ -1,8 +1,14 @@
 # 🌀 FlowLens — Instantly Resume Your Coding Flow
 
-[![target](https://img.shields.io/badge/Target-VS%20Code-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white)](https://code.visualstudio.com/)
+[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/preston176.flowlens?style=for-the-badge&logo=visual-studio-code&logoColor=white&label=VS%20Marketplace&color=007ACC)](https://marketplace.visualstudio.com/items?itemName=preston176.flowlens)
+[![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/preston176.flowlens?style=for-the-badge&logo=visual-studio-code&logoColor=white&label=Installs)](https://marketplace.visualstudio.com/items?itemName=preston176.flowlens)
 [![privacy](https://img.shields.io/badge/Privacy-Local_First-10B981?style=for-the-badge&logo=lock&logoColor=white)](./)
-[![waitlist](https://img.shields.io/badge/Waitlist-29%2B_Developers-7C3AED?style=for-the-badge&logo=mailchimp&logoColor=white)](./)
+
+<p align="center">
+  <a href="https://marketplace.visualstudio.com/items?itemName=preston176.flowlens">
+    <img src="https://img.shields.io/badge/INSTALL_NOW-VS%20Code%20Marketplace-7C3AED?style=for-the-badge&logo=visual-studio-code&logoColor=white" alt="Install from VS Code Marketplace">
+  </a>
+</p>
 
   
 ![Screenshot](.docs/Screenshot.png)
@@ -10,9 +16,9 @@
 
 <p align="center">
   <b>Website:</b> <a href="https://flowlens-vscode.vercel.app">flowlens-vscode.vercel.app</a> &nbsp;|&nbsp;
-  <b><a href="./HOWTO.md">How To Use</a></b> &nbsp;|&nbsp;
-  <b><a href="./SECURITY.md">Security</a></b> &nbsp;|&nbsp;
-  <b><a href="./CONTRIBUTING.md">Contributing</a></b>
+  <b><a href="https://marketplace.visualstudio.com/items?itemName=preston176.flowlens">Get Extension</a></b> &nbsp;|&nbsp;
+  <b><a href="./.docs/SECURITY.md">Security</a></b> &nbsp;|&nbsp;
+  <b><a href="./.docs/CONTRIBUTING.md">Contributing</a></b>
 </p>
 
 > **FlowLens** helps you save your work context in Visual Studio Code and instantly resume where you left off;
@@ -22,9 +28,9 @@
 
 ## 📘 Table of Contents
 
-1. [What is FlowLens?](#-what-is-flowlens)
-2. [Demo](#-demo)
-3. [Prerequisites](#-prerequisites)
+1. [Installation](#-installation)
+2. [What is FlowLens?](#-what-is-flowlens)
+3. [Demo](#-demo)
 4. [How To Use FlowLens](#-how-to-use-flowlens)
    - [Capture Your Current Session](#capture-your-current-session)
    - [View and Resume a Saved Session](#view-and-resume-a-saved-session)
@@ -35,6 +41,29 @@
 8. [Product Vision & Roadmap](#-product-vision--roadmap)
 9. [License](#-license)
 10. [Contributing](#-contributing)
+
+---
+
+## 🚀 Installation
+
+### Install from VS Code Marketplace
+
+**Option 1: Install directly from VS Code**
+1. Open VS Code
+2. Press `Ctrl+Shift+X` (Windows/Linux) or `Cmd+Shift+X` (Mac) to open Extensions
+3. Search for **"FlowLens"**
+4. Click **Install**
+
+**Option 2: Install from Marketplace**
+1. Visit the [FlowLens Marketplace page](https://marketplace.visualstudio.com/items?itemName=preston176.flowlens)
+2. Click **Install**
+
+**Option 3: Quick Install Command**
+```bash
+code --install-extension preston176.flowlens
+```
+
+🎉 **Early Access Available Now!** - Be among the first to try FlowLens and help shape its future.
 
 ---
 
@@ -71,8 +100,7 @@ When you return, FlowLens restores your exact editor layout, terminal setup, and
 ## 🛠️ Prerequisites
 
 - [Visual Studio Code](https://code.visualstudio.com/) installed on your computer  
-- FlowLens extension installed and enabled  
-- Basic familiarity with VS Code’s Command Palette  
+- Basic familiarity with VS Code's Command Palette  
 
 ---
 
@@ -142,7 +170,8 @@ For updates or support, visit the [official website](https://flowlens-vscode.ver
 
 **Roadmap**
 - [x] Landing page & waitlist  
-- [ ] Private alpha — core capture & resume flow (local-only)  
+- [x] **Early Access on VS Code Marketplace** 🎉
+- [x] Core capture & resume flow (local-only)  
 - [ ] Encrypted cross-device sync (opt-in)  
 - [ ] Team workflows and shareable sessions (beta)  
 - [ ] Deep editor integrations & plugin ecosystem  
