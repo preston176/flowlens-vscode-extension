@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://marketplace.visualstudio.com/items?itemName=preston176.flowlens">
-    <img src="https://img.shields.io/badge/INSTALL_NOW-VS%20Code%20Marketplace-7C3AED?style=for-the-badge&logo=visual-studio-code&logoColor=white" alt="Install from VS Code Marketplace">
+    <img src="https://img.shields.io/badge/INSTALL_NOW-VS%20Code%20Marketplace-007ACC?style=for-the-badge&logo=visual-studio-code&logoColor=white" alt="Install from VS Code Marketplace">
   </a>
 </p>
 

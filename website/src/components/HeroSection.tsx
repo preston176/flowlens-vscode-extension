@@ -31,7 +31,7 @@ export function HeroSection({ buttonStateHero, handleSubmit, getWaitlistCount }:
                             href="https://marketplace.visualstudio.com/items?itemName=preston176.flowlens" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            class="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-full text-white font-semibold text-lg transition-all transform hover:scale-105 shadow-xl hover:shadow-2xl"
+                            class="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-full text-white font-semibold text-lg transition-all transform hover:scale-105 shadow-xl hover:shadow-2xl"
                         >
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M21.29 4.1L17.08.15A1.23 1.23 0 0015.66 0H2.5A1.5 1.5 0 001 1.5v21A1.5 1.5 0 002.5 24h19a1.5 1.5 0 001.5-1.5V5.86a1.5 1.5 0 00-.71-1.76zM14 2.12l5.88 5.88H14zm7 20.38H3V1.5h9.5v7a1.5 1.5 0 001.5 1.5h7z"/>
