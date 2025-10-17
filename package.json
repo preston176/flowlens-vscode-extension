@@ -1,14 +1,32 @@
 {
-  "name": "FlowLens",
-  "displayName": "flowlens-vscode-extension",
-  "description": "FlowLens is a VS Code extension that helps developers reduce the cost of context switching",
+  "name": "flowlens",
+  "displayName": "FlowLens",
+  "description": "Instantly resume your coding flow — capture and restore your VS Code sessions with open files, terminals, git branch, and notes",
   "version": "0.0.1",
+  "publisher": "preston176",
+  "icon": "images/icon.png",
   "engines": {
     "vscode": "^1.104.0"
   },
   "categories": [
     "Other"
   ],
+  "keywords": [
+    "productivity",
+    "context",
+    "session",
+    "flow",
+    "developer-tools",
+    "workspace",
+    "context-switching",
+    "restore",
+    "capture"
+  ],
+  "license": "SEE LICENSE IN LICENSE",
+  "galleryBanner": {
+    "color": "#7C3AED",
+    "theme": "dark"
+  },
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
@@ -63,5 +81,10 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/preston176/flowlens-vscode-extension.git"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/preston176/flowlens-vscode-extension/issues"
+  },
+  "homepage": "https://flowlens-vscode.vercel.app",
+  "qna": "https://github.com/preston176/flowlens-vscode-extension/discussions"
 }

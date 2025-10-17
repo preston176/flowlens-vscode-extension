@@ -12,3 +12,11 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/.vscode-test.*
+.DS_Store
+.git/**
+.github/**
+website/**
+*.vsix
+.editorconfig
+.prettierrc
+.eslintcache
