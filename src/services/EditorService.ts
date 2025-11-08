@@ -56,4 +56,34 @@ export class EditorService {
 
 		return failedFiles;
 	}
+
+	restoreTerminals(session: SessionSnapshot): number {
+		let restoredCount = 0;
+
+		if (!session.terminals || session.terminals.length === 0) {
+			return restoredCount;
+		}
+
+		for (const terminalSnapshot of session.terminals) {
+			try {
+				vscode.window.createTerminal({
+					name: terminalSnapshot.name
+				});
+
+				// If we had a last command, we could send it to the terminal
+				// but we don't execute it automatically for safety
+				if (terminalSnapshot.lastCommand) {
+					// Note: We intentionally don't send the command automatically
+					// to avoid accidental execution of potentially destructive commands
+					console.log(`Terminal "${terminalSnapshot.name}" had command: ${terminalSnapshot.lastCommand}`);
+				}
+
+				restoredCount++;
+			} catch (e) {
+				console.error('Failed to restore terminal', terminalSnapshot.name, e);
+			}
+		}
+
+		return restoredCount;
+	}
 }

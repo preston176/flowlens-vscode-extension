@@ -38,18 +38,50 @@ export async function openSessionsPanelCommand(
 				return;
 			}
 
+			// Validate workspace if session has workspace info
+			const currentWorkspace = workspaceService.getCurrentWorkspace();
+			if (session.workspace && currentWorkspace) {
+				const isSameWorkspace = workspaceService.isSameWorkspace(session.workspace, currentWorkspace);
+				if (!isSameWorkspace) {
+					const action = await vscode.window.showWarningMessage(
+						`Session "${session.title}" was captured in workspace "${session.workspace.name}" but you're currently in "${currentWorkspace.name}". Some files may not exist.`,
+						'Continue Anyway',
+						'Cancel'
+					);
+
+					if (action !== 'Continue Anyway') {
+						return;
+					}
+				}
+			}
+
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
 				title: `Restoring session: ${session.title}`,
 				cancellable: false
 			}, async (progress) => {
 				const failedFiles = await editorService.restoreEditors(session, progress);
+				const restoredTerminals = editorService.restoreTerminals(session);
+
+				// Build result message
+				const messages: string[] = [];
+
+				if (failedFiles.length === 0 && session.editors.length > 0) {
+					messages.push(`Restored ${session.editors.length} file(s)`);
+				} else if (failedFiles.length > 0) {
+					const successCount = session.editors.length - failedFiles.length;
+					messages.push(`Restored ${successCount}/${session.editors.length} file(s)`);
+				}
+
+				if (restoredTerminals > 0) {
+					messages.push(`${restoredTerminals} terminal(s)`);
+				}
 
 				if (failedFiles.length > 0) {
 					const fileList = failedFiles.length <= 3 ? failedFiles.join(', ') : `${failedFiles.length} files`;
-					vscode.window.showWarningMessage(`Resumed session: ${session.title}. Failed to open: ${fileList}`);
+					vscode.window.showWarningMessage(`Resumed session: ${session.title}. ${messages.join(', ')}. Failed to open: ${fileList}`);
 				} else {
-					vscode.window.showInformationMessage(`Resumed session: ${session.title}`);
+					vscode.window.showInformationMessage(`Resumed session: ${session.title}. ${messages.join(', ')}`);
 				}
 			});
 
