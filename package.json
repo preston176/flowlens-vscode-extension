@@ -27,14 +27,9 @@
     "color": "#007ACC",
     "theme": "dark"
   },
-  "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
-      {
-        "command": "FlowLens.helloWorld",
-        "title": "Hello World"
-      },
       {
         "command": "FlowLens.captureSession",
         "title": "FlowLens: Capture Session"
@@ -64,6 +59,9 @@
     "check-types": "tsc --noEmit",
     "lint": "eslint src",
     "test": "vscode-test"
+  },
+  "dependencies": {
+    "@vscode/webview-ui-toolkit": "^1.4.0"
   },
   "devDependencies": {
     "@types/vscode": "^1.104.0",
