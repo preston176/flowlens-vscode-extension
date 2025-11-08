@@ -196,5 +196,4 @@ Please read our [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
 
 <p align="center">
   <sub>Built by developers obsessed with flow, focus, and frictionless coding.</sub><br/>
-  <sub>Inspired by tools like Linear, Notion, and Apple’s design simplicity.</sub>
 </p>
