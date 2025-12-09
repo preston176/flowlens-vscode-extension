@@ -49,65 +49,54 @@ The extension operates entirely offline by default. No code content is transmitt
 
 ## Architecture
 
-```mermaid
-graph TD
-    subgraph COMMANDS["Command Layer"]
-        CMD1[Show Sessions]
-        CMD2[Open Dashboard]
-        CMD3[Share Session]
-    end
+### System Architecture
 
-    subgraph SERVICES["Service Layer"]
-        direction TB
-        STORE[StorageService]
-        ANALYTICS[AnalyticsService]
-        EDITOR[EditorService]
-        GIT[GitService]
-        WS[WorkspaceService]
-        AUTO[AutoCaptureService]
-    end
-
-    subgraph APIS["VS Code API Layer"]
-        direction LR
-        WSAPI[workspace.*]
-        WINAPI[window.*]
-        SCMAPI[scm.*]
-    end
-
-    subgraph STORAGE["Storage Layer"]
-        CTX[ExtensionContext]
-        GLOBAL[GlobalState]
-        SYNC[Cloud Sync - Planned]
-    end
-
-    CMD1 --> STORE
-    CMD2 --> ANALYTICS
-    CMD3 --> STORE
-
-    ANALYTICS --> STORE
-    AUTO --> STORE
-
-    EDITOR --> WSAPI
-    EDITOR --> WINAPI
-    GIT --> SCMAPI
-    WS --> WSAPI
-
-    STORE --> CTX
-    CTX --> GLOBAL
-    GLOBAL -.-> SYNC
-
-    style CMD1 fill:#569cd6,stroke:#333,stroke-width:2px
-    style CMD2 fill:#569cd6,stroke:#333,stroke-width:2px
-    style CMD3 fill:#569cd6,stroke:#333,stroke-width:2px
-    style STORE fill:#4ec9b0,stroke:#333,stroke-width:2px
-    style EDITOR fill:#4ec9b0,stroke:#333,stroke-width:2px
-    style GIT fill:#4ec9b0,stroke:#333,stroke-width:2px
-    style WS fill:#4ec9b0,stroke:#333,stroke-width:2px
-    style ANALYTICS fill:#4ec9b0,stroke:#333,stroke-width:2px
-    style AUTO fill:#4ec9b0,stroke:#333,stroke-width:2px
-    style CTX fill:#ce9178,stroke:#333,stroke-width:2px
-    style GLOBAL fill:#ce9178,stroke:#333,stroke-width:2px
-    style SYNC fill:#ce9178,stroke:#333,stroke-width:2px,stroke-dasharray: 5 5
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                          Command Layer                              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   Show Sessions          Open Dashboard          Share Session      │
+│        │                       │                       │            │
+└────────┼───────────────────────┼───────────────────────┼────────────┘
+         │                       │                       │
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                          Service Layer                              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐             │
+│  │  Storage     │   │  Analytics   │   │  Editor      │             │
+│  │  Service     │   │  Service     │   │  Service     │             │
+│  └──────┬───────┘   └──────┬───────┘   └──────┬───────┘             │
+│         │                  │                  │                     │
+│  ┌──────┴───────┐   ┌──────┴───────┐   ┌──────┴───────┐             │
+│  │  Git         │   │  Workspace   │   │  AutoCapture │             │
+│  │  Service     │   │  Service     │   │  Service     │             │
+│  └──────┬───────┘   └──────┬───────┘   └──────────────┘             │
+│         │                  │                                        │
+└─────────┼──────────────────┼────────────────────────────────────────┘
+          │                  │
+          ▼                  ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                       VS Code API Layer                             │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│    workspace.*          window.*          scm.*                     │
+│         │                  │                │                       │
+└─────────┼──────────────────┼────────────────┼───────────────────────┘
+          │                  │                │
+          └──────────┬───────┴────────────────┘
+                     ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                         Storage Layer                               │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│         ExtensionContext ──► GlobalState ····► Cloud Sync           │
+│                                (Local)         (Planned)            │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Component Breakdown
@@ -164,61 +153,43 @@ FlowLens provides three primary commands accessible via Command Palette (`Cmd+Sh
 
 ### Basic Workflow
 
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant CMD as Command
-    participant SVC as Services
-    participant API as VS Code API
-    participant STORE as Storage
+#### Capture Session Flow
 
-    Note over U,STORE: Capture Session Flow
-
-    U->>CMD: Execute "Open Dashboard"
-    CMD->>SVC: Request current state
-
-    par Parallel Collection
-        SVC->>API: Get open editors
-        API-->>SVC: Editor list + cursors
-        SVC->>API: Get terminals
-        API-->>SVC: Terminal state
-        SVC->>API: Get git branch
-        API-->>SVC: Branch + commit SHA
-    end
-
-    SVC->>SVC: Build SessionSnapshot
-    SVC->>STORE: Save snapshot
-    STORE->>API: Write to GlobalState
-    API-->>STORE: Success
-    STORE-->>CMD: Session ID
-    CMD-->>U: Show success notification
-
-    Note over U,STORE: Restore Session Flow
-
-    U->>CMD: Select session from list
-    CMD->>STORE: Fetch session by ID
-    STORE->>API: Read from GlobalState
-    API-->>STORE: Session data
-    STORE-->>CMD: SessionSnapshot
-
-    CMD->>SVC: Validate session
-    SVC->>API: Check files exist
-    API-->>SVC: Validation result
-
-    alt Files exist
-        SVC->>API: Open editors
-        SVC->>API: Create terminals
-        SVC->>API: Checkout git branch
-        API-->>SVC: State restored
-        SVC-->>CMD: Success
-        CMD-->>U: Environment restored
-    else Files missing
-        SVC-->>CMD: Validation error
-        CMD-->>U: Show warning dialog
-    end
+```
+User ──► Command ──► Services ──► VS Code API ──► Storage
+  │          │            │             │            │
+  │          │            ├─► Get editors, terminals, git branch
+  │          │            │             │
+  │          │            ◄─────────────┘
+  │          │            │
+  │          │            ├─► Build SessionSnapshot
+  │          │            │
+  │          ◄────────────┤
+  ◄──────────┘            │
+                         │
+                    Write to GlobalState
 ```
 
-1. **Capture a session**:
+#### Restore Session Flow
+
+````
+User ──► Command ──► Storage ──► Services ──► VS Code API
+  │          │          │            │              │
+  │          │          ├─► Read from GlobalState   │
+  │          ◄──────────┤                           │
+  │          │          │                           │
+  │          ├─► Validate session                   │
+  │          │          │                           │
+  │          │          ├─►  Check files exist ──────┤
+  │          │          │                           │
+  │          │          ◄───────────────────────────┤
+  │          │          │                           │
+  │          │          ├─► Open editors, terminals │
+  │          │          ├─► Checkout git branch     │
+  │          │          │                           │
+  ◄──────────┴──────────┴───────────────────────────┘
+     Environment restored
+```1. **Capture a session**:
 
    - Open Dashboard → "Capture New Session"
    - Enter a descriptive title
@@ -253,69 +224,43 @@ Sessions are serialized as JSON and stored in VS Code's GlobalState. No code con
 
 ### Data Structure
 
-```mermaid
-classDiagram
-    class SessionSnapshot {
-        +string id
-        +string title
-        +number timestamp
-        +string notes
-        +EditorState[] editors
-        +TerminalState[] terminals
-        +GitState git
-        +WorkspaceState workspace
-        +Metadata metadata
-    }
+````
 
-    class EditorState {
-        +string path
-        +Position cursor
-        +Selection selection
-        +number scrollOffset
-    }
+┌─────────────────────────────────────────────────────────────┐
+│ SessionSnapshot │
+├─────────────────────────────────────────────────────────────┤
+│ id: string │
+│ title: string │
+│ timestamp: number │
+│ notes?: string │
+├─────────────────────────────────────────────────────────────┤
+│ ┌─────────────────┐ ┌─────────────────┐ │
+│ │ EditorState[] │ │ TerminalState[] │ │
+│ ├─────────────────┤ ├─────────────────┤ │
+│ │ • path │ │ • id │ │
+│ │ • cursor │ │ • cwd │ │
+│ │ • selection │ │ • lastCommand │ │
+│ │ • scrollOffset │ └─────────────────┘ │
+│ └─────────────────┘ │
+│ │
+│ ┌─────────────────┐ ┌─────────────────┐ │
+│ │ GitState │ │ WorkspaceState │ │
+│ ├─────────────────┤ ├─────────────────┤ │
+│ │ • branch │ │ • folders[] │ │
+│ │ • commit │ │ • name │ │
+│ │ • isDirty │ └─────────────────┘ │
+│ └─────────────────┘ │
+│ │
+│ ┌─────────────────┐ │
+│ │ Metadata │ │
+│ ├─────────────────┤ │
+│ │ • captureTime │ │
+│ │ • fileCount │ │
+│ │ • terminalCount │ │
+│ └─────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
 
-    class Position {
-        +number line
-        +number character
-    }
-
-    class Selection {
-        +Position start
-        +Position end
-    }
-
-    class TerminalState {
-        +string id
-        +string cwd
-        +string lastCommand
-    }
-
-    class GitState {
-        +string branch
-        +string commit
-        +boolean isDirty
-    }
-
-    class WorkspaceState {
-        +string[] folders
-        +string name
-    }
-
-    class Metadata {
-        +number captureTime
-        +number fileCount
-        +number terminalCount
-    }
-
-    SessionSnapshot "1" --> "*" EditorState
-    SessionSnapshot "1" --> "*" TerminalState
-    SessionSnapshot "1" --> "1" GitState
-    SessionSnapshot "1" --> "1" WorkspaceState
-    SessionSnapshot "1" --> "1" Metadata
-    EditorState "1" --> "1" Position
-    EditorState "1" --> "0..1" Selection
-    Selection "1" --> "2" Position
-```
+````
 
 ### Schema
 
@@ -362,7 +307,7 @@ interface SessionSnapshot {
     terminalCount: number;
   };
 }
-```
+````
 
 ### Storage Location
 
@@ -589,30 +534,6 @@ Contributions are not currently accepted as the codebase is proprietary. However
 - Security disclosures via `.docs/SECURITY.md`
 
 See [CONTRIBUTING.md](./.docs/CONTRIBUTING.md) for detailed guidelines.
-
-## 🚀 Installation
-
-### Install from VS Code Marketplace
-
-**Option 1: Install directly from VS Code**
-
-1. Open VS Code
-2. Press `Ctrl+Shift+X` (Windows/Linux) or `Cmd+Shift+X` (Mac) to open Extensions
-3. Search for **"FlowLens"**
-4. Click **Install**
-
-**Option 2: Install from Marketplace**
-
-1. Visit the [FlowLens Marketplace page](https://marketplace.visualstudio.com/items?itemName=preston176.flowlens)
-2. Click **Install**
-
-**Option 3: Quick Install Command**
-
-```bash
-code --install-extension preston176.flowlens
-```
-
-🎉 **Early Access Available Now!** - Be among the first to try FlowLens and help shape its future.
 
 ---
 
