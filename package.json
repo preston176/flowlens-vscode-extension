@@ -2,7 +2,7 @@
   "name": "flowlens",
   "displayName": "FlowLens",
   "description": "Instantly resume your coding flow — capture and restore your VS Code sessions with open files, terminals, git branch, and notes",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "preston176",
   "icon": "images/icon.png",
   "engines": {
@@ -35,20 +35,119 @@
         "title": "FlowLens: Capture Session"
       },
       {
+        "command": "FlowLens.quickCapture",
+        "title": "FlowLens: Quick Capture (Smart Naming)"
+      },
+      {
+        "command": "FlowLens.captureFromTemplate",
+        "title": "FlowLens: Capture from Template"
+      },
+      {
         "command": "FlowLens.showSessions",
         "title": "FlowLens: Show Sessions"
-      }
-      ,
+      },
       {
         "command": "FlowLens.openSessionsPanel",
         "title": "FlowLens: Open Sessions Panel"
+      },
+      {
+        "command": "FlowLens.showProductivityDashboard",
+        "title": "FlowLens: Show Productivity Dashboard"
+      },
+      {
+        "command": "FlowLens.openDashboard",
+        "title": "FlowLens: Open Dashboard"
+      },
+      {
+        "command": "FlowLens.exportSessions",
+        "title": "FlowLens: Export Sessions"
+      },
+      {
+        "command": "FlowLens.importSessions",
+        "title": "FlowLens: Import Sessions"
+      },
+      {
+        "command": "FlowLens.shareSession",
+        "title": "FlowLens: Share Session"
+      },
+      {
+        "command": "FlowLens.upgradeToPro",
+        "title": "FlowLens: Upgrade to Pro"
       }
-    ]
+    ],
+    "keybindings": [
+      {
+        "command": "FlowLens.quickCapture",
+        "key": "ctrl+shift+f",
+        "mac": "cmd+shift+f",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "FlowLens.showSessions",
+        "key": "ctrl+shift+r",
+        "mac": "cmd+shift+r"
+      },
+      {
+        "command": "FlowLens.showProductivityDashboard",
+        "key": "cmd+shift+t",
+        "mac": "cmd+shift+t",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "FlowLens.openDashboard",
+        "key": "cmd+shift+d",
+        "mac": "cmd+shift+d"
+      }
+    ],
+    "configuration": {
+      "title": "FlowLens",
+      "properties": {
+        "flowlens.autoCapture.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic session capture"
+        },
+        "flowlens.autoCapture.onBranchSwitch": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-capture when switching git branches"
+        },
+        "flowlens.autoCapture.onIdleTime": {
+          "type": "boolean",
+          "default": false,
+          "description": "Auto-capture after idle period"
+        },
+        "flowlens.autoCapture.idleMinutes": {
+          "type": "number",
+          "default": 30,
+          "minimum": 5,
+          "maximum": 120,
+          "description": "Minutes of idle time before auto-capture"
+        },
+        "flowlens.autoCapture.onWorkspaceFolderChange": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-capture when workspace folders change"
+        },
+        "flowlens.autoCapture.maxPerDay": {
+          "type": "number",
+          "default": 20,
+          "minimum": 5,
+          "maximum": 100,
+          "description": "Maximum auto-captures per day"
+        },
+        "flowlens.analytics.trackUsage": {
+          "type": "boolean",
+          "default": true,
+          "description": "Track usage analytics (all data stays local)"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
     "compile": "npm run check-types && npm run lint && node esbuild.js",
-  "build:webview": "node esbuild.js",
+    "build:webview": "node esbuild.js",
     "watch": "npm-run-all -p watch:*",
     "watch:esbuild": "node esbuild.js --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
