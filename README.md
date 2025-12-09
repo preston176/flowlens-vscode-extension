@@ -8,8 +8,6 @@ A context-aware session management extension for VS Code that captures and resto
 
 **Links:** [Marketplace](https://marketplace.visualstudio.com/items?itemName=preston176.flowlens) | [Website](https://flowlens-vscode.vercel.app) | [Security](./.docs/SECURITY.md) | [Contributing](./.docs/CONTRIBUTING.md)
 
-**Links:** [Marketplace](https://marketplace.visualstudio.com/items?itemName=preston176.flowlens) | [Website](https://flowlens-vscode.vercel.app) | [Security](./.docs/SECURITY.md) | [Contributing](./.docs/CONTRIBUTING.md)
-
 ---
 
 ## Table of Contents
