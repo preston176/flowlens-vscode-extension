@@ -5,20 +5,10 @@ import { EditorService } from "./services/EditorService";
 import { WorkspaceService } from "./services/WorkspaceService";
 import { SmartNamingService } from "./services/SmartNamingService";
 import { AutoCaptureService } from "./services/AutoCaptureService";
-import { MonetizationService } from "./services/MonetizationService";
 import { AnalyticsService } from "./services/AnalyticsService";
-import { captureSessionCommand } from "./commands/captureSession";
 import { showSessionsCommand } from "./commands/showSessions";
-import { openSessionsPanelCommand } from "./commands/openSessionsPanel";
-import { quickCaptureCommand } from "./commands/quickCapture";
-import { captureFromTemplateCommand } from "./commands/captureFromTemplate";
-import { showProductivityDashboardCommand } from "./commands/showProductivityDashboard";
 import { openDashboardCommand } from "./commands/openDashboard";
-import {
-  exportSessionsCommand,
-  importSessionsCommand,
-  shareSessionCommand,
-} from "./commands/sharingCommands";
+import { shareSessionCommand } from "./commands/sharingCommands";
 
 let autoCaptureService: AutoCaptureService | null = null;
 
@@ -42,66 +32,14 @@ export function activate(context: vscode.ExtensionContext) {
   autoCaptureService.start();
 
   // Register commands
-  const captureCommand = vscode.commands.registerCommand(
-    "FlowLens.captureSession",
-    () =>
-      captureSessionCommand(
-        storageService,
-        gitService,
-        editorService,
-        workspaceService
-      )
-  );
-
   const showCommand = vscode.commands.registerCommand(
     "FlowLens.showSessions",
     () => showSessionsCommand(storageService, editorService, workspaceService)
   );
 
-  const openPanelCommand = vscode.commands.registerCommand(
-    "FlowLens.openSessionsPanel",
-    () =>
-      openSessionsPanelCommand(storageService, editorService, workspaceService)
-  );
-
-  const quickCaptureCmd = vscode.commands.registerCommand(
-    "FlowLens.quickCapture",
-    () =>
-      quickCaptureCommand(
-        storageService,
-        gitService,
-        editorService,
-        workspaceService
-      )
-  );
-
-  const captureFromTemplateCmd = vscode.commands.registerCommand(
-    "FlowLens.captureFromTemplate",
-    () =>
-      captureFromTemplateCommand(
-        storageService,
-        editorService,
-        workspaceService
-      )
-  );
-
-  const showDashboardCmd = vscode.commands.registerCommand(
-    "FlowLens.showProductivityDashboard",
-    () => showProductivityDashboardCommand(storageService)
-  );
-
   const openDashboardCmd = vscode.commands.registerCommand(
     "FlowLens.openDashboard",
     () => openDashboardCommand(storageService, analyticsService)
-  );
-  const exportSessionsCmd = vscode.commands.registerCommand(
-    "FlowLens.exportSessions",
-    () => exportSessionsCommand(storageService)
-  );
-
-  const importSessionsCmd = vscode.commands.registerCommand(
-    "FlowLens.importSessions",
-    () => importSessionsCommand(storageService)
   );
 
   const shareSessionCmd = vscode.commands.registerCommand(
@@ -109,30 +47,14 @@ export function activate(context: vscode.ExtensionContext) {
     () => shareSessionCommand(storageService)
   );
 
-  // Monetization commands
-  const monetizationService = new MonetizationService(context);
-
-  const showUpgradeCmd = vscode.commands.registerCommand(
-    "FlowLens.upgradeToPro",
-    () => monetizationService.showUpgradePrompt("Unlimited Sessions")
-  );
-
   // Demo command
   const { activateDemoCommand } = require("../demo/demo-runner");
   activateDemoCommand(context);
 
   context.subscriptions.push(
-    captureCommand,
     showCommand,
-    openPanelCommand,
-    quickCaptureCmd,
-    captureFromTemplateCmd,
-    showDashboardCmd,
     openDashboardCmd,
-    exportSessionsCmd,
-    importSessionsCmd,
-    shareSessionCmd,
-    showUpgradeCmd
+    shareSessionCmd
   );
 }
 

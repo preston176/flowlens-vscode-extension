@@ -31,72 +31,16 @@
   "contributes": {
     "commands": [
       {
-        "command": "FlowLens.captureSession",
-        "title": "FlowLens: Capture Session"
-      },
-      {
-        "command": "FlowLens.quickCapture",
-        "title": "FlowLens: Quick Capture (Smart Naming)"
-      },
-      {
-        "command": "FlowLens.captureFromTemplate",
-        "title": "FlowLens: Capture from Template"
+        "command": "FlowLens.shareSession",
+        "title": "FlowLens: Share Session"
       },
       {
         "command": "FlowLens.showSessions",
         "title": "FlowLens: Show Sessions"
       },
       {
-        "command": "FlowLens.openSessionsPanel",
-        "title": "FlowLens: Open Sessions Panel"
-      },
-      {
-        "command": "FlowLens.showProductivityDashboard",
-        "title": "FlowLens: Show Productivity Dashboard"
-      },
-      {
         "command": "FlowLens.openDashboard",
         "title": "FlowLens: Open Dashboard"
-      },
-      {
-        "command": "FlowLens.exportSessions",
-        "title": "FlowLens: Export Sessions"
-      },
-      {
-        "command": "FlowLens.importSessions",
-        "title": "FlowLens: Import Sessions"
-      },
-      {
-        "command": "FlowLens.shareSession",
-        "title": "FlowLens: Share Session"
-      },
-      {
-        "command": "FlowLens.upgradeToPro",
-        "title": "FlowLens: Upgrade to Pro"
-      }
-    ],
-    "keybindings": [
-      {
-        "command": "FlowLens.quickCapture",
-        "key": "ctrl+shift+f",
-        "mac": "cmd+shift+f",
-        "when": "editorTextFocus"
-      },
-      {
-        "command": "FlowLens.showSessions",
-        "key": "ctrl+shift+r",
-        "mac": "cmd+shift+r"
-      },
-      {
-        "command": "FlowLens.showProductivityDashboard",
-        "key": "cmd+shift+t",
-        "mac": "cmd+shift+t",
-        "when": "editorTextFocus"
-      },
-      {
-        "command": "FlowLens.openDashboard",
-        "key": "cmd+shift+d",
-        "mac": "cmd+shift+d"
       }
     ],
     "configuration": {
