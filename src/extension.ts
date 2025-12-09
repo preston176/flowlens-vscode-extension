@@ -51,11 +51,7 @@ export function activate(context: vscode.ExtensionContext) {
   const { activateDemoCommand } = require("../demo/demo-runner");
   activateDemoCommand(context);
 
-  context.subscriptions.push(
-    showCommand,
-    openDashboardCmd,
-    shareSessionCmd
-  );
+  context.subscriptions.push(showCommand, openDashboardCmd, shareSessionCmd);
 }
 
 export function deactivate() {
