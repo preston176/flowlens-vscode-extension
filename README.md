@@ -51,37 +51,65 @@ The extension operates entirely offline by default. No code content is transmitt
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                       VS Code Extension                      │
-├─────────────────────────────────────────────────────────────┤
-│                                                               │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │   Commands   │  │   Services   │  │   Webview    │      │
-│  ├──────────────┤  ├──────────────┤  ├──────────────┤      │
-│  │ Show         │  │ Storage      │  │ Dashboard    │      │
-│  │ Dashboard    │─▶│ Analytics    │─▶│ (Embedded)   │      │
-│  │ Share        │  │ EditorSvc    │  │              │      │
-│  └──────────────┘  │ GitSvc       │  └──────────────┘      │
-│                     │ WorkspaceSvc │                         │
-│                     └──────────────┘                         │
-│                            │                                 │
-│                            ▼                                 │
-│                  ┌──────────────────┐                        │
-│                  │  VS Code APIs    │                        │
-│                  ├──────────────────┤                        │
-│                  │ workspace.*      │                        │
-│                  │ window.*         │                        │
-│                  │ scm.*            │                        │
-│                  │ ExtensionContext │                        │
-│                  └──────────────────┘                        │
-│                            │                                 │
-└────────────────────────────┼─────────────────────────────────┘
-                             ▼
-                  ┌──────────────────┐
-                  │  GlobalState     │
-                  │  (Local Storage) │
-                  └──────────────────┘
+```mermaid
+graph TD
+    subgraph COMMANDS["Command Layer"]
+        CMD1[Show Sessions]
+        CMD2[Open Dashboard]
+        CMD3[Share Session]
+    end
+
+    subgraph SERVICES["Service Layer"]
+        direction TB
+        STORE[StorageService]
+        ANALYTICS[AnalyticsService]
+        EDITOR[EditorService]
+        GIT[GitService]
+        WS[WorkspaceService]
+        AUTO[AutoCaptureService]
+    end
+
+    subgraph APIS["VS Code API Layer"]
+        direction LR
+        WSAPI[workspace.*]
+        WINAPI[window.*]
+        SCMAPI[scm.*]
+    end
+
+    subgraph STORAGE["Storage Layer"]
+        CTX[ExtensionContext]
+        GLOBAL[GlobalState]
+        SYNC[Cloud Sync - Planned]
+    end
+
+    CMD1 --> STORE
+    CMD2 --> ANALYTICS
+    CMD3 --> STORE
+
+    ANALYTICS --> STORE
+    AUTO --> STORE
+
+    EDITOR --> WSAPI
+    EDITOR --> WINAPI
+    GIT --> SCMAPI
+    WS --> WSAPI
+
+    STORE --> CTX
+    CTX --> GLOBAL
+    GLOBAL -.-> SYNC
+
+    style CMD1 fill:#569cd6,stroke:#333,stroke-width:2px
+    style CMD2 fill:#569cd6,stroke:#333,stroke-width:2px
+    style CMD3 fill:#569cd6,stroke:#333,stroke-width:2px
+    style STORE fill:#4ec9b0,stroke:#333,stroke-width:2px
+    style EDITOR fill:#4ec9b0,stroke:#333,stroke-width:2px
+    style GIT fill:#4ec9b0,stroke:#333,stroke-width:2px
+    style WS fill:#4ec9b0,stroke:#333,stroke-width:2px
+    style ANALYTICS fill:#4ec9b0,stroke:#333,stroke-width:2px
+    style AUTO fill:#4ec9b0,stroke:#333,stroke-width:2px
+    style CTX fill:#ce9178,stroke:#333,stroke-width:2px
+    style GLOBAL fill:#ce9178,stroke:#333,stroke-width:2px
+    style SYNC fill:#ce9178,stroke:#333,stroke-width:2px,stroke-dasharray: 5 5
 ```
 
 ### Component Breakdown
@@ -138,6 +166,60 @@ FlowLens provides three primary commands accessible via Command Palette (`Cmd+Sh
 
 ### Basic Workflow
 
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant CMD as Command
+    participant SVC as Services
+    participant API as VS Code API
+    participant STORE as Storage
+
+    Note over U,STORE: Capture Session Flow
+
+    U->>CMD: Execute "Open Dashboard"
+    CMD->>SVC: Request current state
+
+    par Parallel Collection
+        SVC->>API: Get open editors
+        API-->>SVC: Editor list + cursors
+        SVC->>API: Get terminals
+        API-->>SVC: Terminal state
+        SVC->>API: Get git branch
+        API-->>SVC: Branch + commit SHA
+    end
+
+    SVC->>SVC: Build SessionSnapshot
+    SVC->>STORE: Save snapshot
+    STORE->>API: Write to GlobalState
+    API-->>STORE: Success
+    STORE-->>CMD: Session ID
+    CMD-->>U: Show success notification
+
+    Note over U,STORE: Restore Session Flow
+
+    U->>CMD: Select session from list
+    CMD->>STORE: Fetch session by ID
+    STORE->>API: Read from GlobalState
+    API-->>STORE: Session data
+    STORE-->>CMD: SessionSnapshot
+
+    CMD->>SVC: Validate session
+    SVC->>API: Check files exist
+    API-->>SVC: Validation result
+
+    alt Files exist
+        SVC->>API: Open editors
+        SVC->>API: Create terminals
+        SVC->>API: Checkout git branch
+        API-->>SVC: State restored
+        SVC-->>CMD: Success
+        CMD-->>U: Environment restored
+    else Files missing
+        SVC-->>CMD: Validation error
+        CMD-->>U: Show warning dialog
+    end
+```
+
 1. **Capture a session**:
 
    - Open Dashboard → "Capture New Session"
@@ -170,6 +252,72 @@ Configure in Settings (`flowlens.autoCapture.*`).
 ## Session Data Model
 
 Sessions are serialized as JSON and stored in VS Code's GlobalState. No code content is persisted—only references and metadata.
+
+### Data Structure
+
+```mermaid
+classDiagram
+    class SessionSnapshot {
+        +string id
+        +string title
+        +number timestamp
+        +string notes
+        +EditorState[] editors
+        +TerminalState[] terminals
+        +GitState git
+        +WorkspaceState workspace
+        +Metadata metadata
+    }
+
+    class EditorState {
+        +string path
+        +Position cursor
+        +Selection selection
+        +number scrollOffset
+    }
+
+    class Position {
+        +number line
+        +number character
+    }
+
+    class Selection {
+        +Position start
+        +Position end
+    }
+
+    class TerminalState {
+        +string id
+        +string cwd
+        +string lastCommand
+    }
+
+    class GitState {
+        +string branch
+        +string commit
+        +boolean isDirty
+    }
+
+    class WorkspaceState {
+        +string[] folders
+        +string name
+    }
+
+    class Metadata {
+        +number captureTime
+        +number fileCount
+        +number terminalCount
+    }
+
+    SessionSnapshot "1" --> "*" EditorState
+    SessionSnapshot "1" --> "*" TerminalState
+    SessionSnapshot "1" --> "1" GitState
+    SessionSnapshot "1" --> "1" WorkspaceState
+    SessionSnapshot "1" --> "1" Metadata
+    EditorState "1" --> "1" Position
+    EditorState "1" --> "0..1" Selection
+    Selection "1" --> "2" Position
+```
 
 ### Schema
 
@@ -290,6 +438,62 @@ vsce package
 ```
 
 ### Project Structure
+
+```mermaid
+graph TD
+    subgraph COMMANDS["Commands"]
+        SHOW[showSessions]
+        DASH[openDashboard]
+        SHARE[shareSession]
+    end
+
+    subgraph CORE["Core Services"]
+        STORE[StorageService]
+    end
+
+    subgraph HELPERS["Helper Services"]
+        EDITOR[EditorService]
+        GIT[GitService]
+        WS[WorkspaceService]
+    end
+
+    subgraph ADVANCED["Advanced Services"]
+        ANALYTICS[AnalyticsService]
+        AUTO[AutoCaptureService]
+        SMART[SmartNamingService]
+    end
+
+    SHOW --> STORE
+    SHOW --> EDITOR
+    SHOW --> WS
+
+    DASH --> STORE
+    DASH --> ANALYTICS
+
+    SHARE --> STORE
+
+    ANALYTICS --> STORE
+
+    AUTO --> STORE
+    AUTO --> GIT
+    AUTO --> EDITOR
+    AUTO --> WS
+
+    SMART --> GIT
+
+    style STORE fill:#4ec9b0,stroke:#333,stroke-width:3px
+    style EDITOR fill:#4ec9b0,stroke:#333,stroke-width:2px
+    style GIT fill:#4ec9b0,stroke:#333,stroke-width:2px
+    style WS fill:#4ec9b0,stroke:#333,stroke-width:2px
+    style SMART fill:#dcdcaa,stroke:#333,stroke-width:2px
+    style AUTO fill:#dcdcaa,stroke:#333,stroke-width:2px
+    style ANALYTICS fill:#dcdcaa,stroke:#333,stroke-width:2px
+    style SHOW fill:#569cd6,stroke:#333,stroke-width:2px
+    style DASH fill:#569cd6,stroke:#333,stroke-width:2px
+    style SHARE fill:#569cd6,stroke:#333,stroke-width:2px
+```
+
+### Directory Structure
 
 ```
 flowlens-vscode-extension/
