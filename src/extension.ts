@@ -8,7 +8,14 @@ import { AutoCaptureService } from "./services/AutoCaptureService";
 import { AnalyticsService } from "./services/AnalyticsService";
 import { showSessionsCommand } from "./commands/showSessions";
 import { openDashboardCommand } from "./commands/openDashboard";
-import { shareSessionCommand } from "./commands/sharingCommands";
+import {
+  shareSessionCommand,
+  exportSessionsCommand,
+  importSessionsCommand,
+} from "./commands/sharingCommands";
+import { quickCaptureCommand } from "./commands/quickCapture";
+import { restoreSessionCommand } from "./commands/restoreSession";
+import { captureFromTemplateCommand } from "./commands/captureFromTemplate";
 
 let autoCaptureService: AutoCaptureService | null = null;
 
@@ -47,11 +54,53 @@ export function activate(context: vscode.ExtensionContext) {
     () => shareSessionCommand(storageService)
   );
 
+  const quickCaptureCmd = vscode.commands.registerCommand(
+    "FlowLens.quickCapture",
+    () =>
+      quickCaptureCommand(
+        storageService,
+        gitService,
+        editorService,
+        workspaceService
+      )
+  );
+
+  const restoreSessionCmd = vscode.commands.registerCommand(
+    "FlowLens.restoreSession",
+    (session) =>
+      restoreSessionCommand(storageService, editorService, workspaceService, session)
+  );
+
+  const captureFromTemplateCmd = vscode.commands.registerCommand(
+    "FlowLens.captureFromTemplate",
+    () =>
+      captureFromTemplateCommand(storageService, editorService, workspaceService)
+  );
+
+  const exportSessionsCmd = vscode.commands.registerCommand(
+    "FlowLens.exportSessions",
+    () => exportSessionsCommand(storageService)
+  );
+
+  const importSessionsCmd = vscode.commands.registerCommand(
+    "FlowLens.importSessions",
+    () => importSessionsCommand(storageService)
+  );
+
   // Demo command
   const { activateDemoCommand } = require("../demo/demo-runner");
   activateDemoCommand(context);
 
-  context.subscriptions.push(showCommand, openDashboardCmd, shareSessionCmd);
+  context.subscriptions.push(
+    showCommand,
+    openDashboardCmd,
+    shareSessionCmd,
+    quickCaptureCmd,
+    restoreSessionCmd,
+    captureFromTemplateCmd,
+    exportSessionsCmd,
+    importSessionsCmd
+  );
 }
 
 export function deactivate() {

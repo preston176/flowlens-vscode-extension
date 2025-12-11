@@ -2,7 +2,7 @@
   "name": "flowlens",
   "displayName": "FlowLens",
   "description": "Instantly resume your coding flow — capture and restore your VS Code sessions with open files, terminals, git branch, and notes",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "publisher": "preston176",
   "icon": "images/icon.png",
   "engines": {
@@ -41,6 +41,26 @@
       {
         "command": "FlowLens.openDashboard",
         "title": "FlowLens: Open Dashboard"
+      },
+      {
+        "command": "FlowLens.quickCapture",
+        "title": "FlowLens: Quick Capture"
+      },
+      {
+        "command": "FlowLens.restoreSession",
+        "title": "FlowLens: Restore Session"
+      },
+      {
+        "command": "FlowLens.captureFromTemplate",
+        "title": "FlowLens: Capture from Template"
+      },
+      {
+        "command": "FlowLens.exportSessions",
+        "title": "FlowLens: Export Sessions"
+      },
+      {
+        "command": "FlowLens.importSessions",
+        "title": "FlowLens: Import Sessions"
       }
     ],
     "configuration": {
