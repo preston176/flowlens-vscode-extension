@@ -23,7 +23,7 @@ export async function openDashboardCommand(
     try {
       const sessions = await storageService.getSessions();
       const analytics = await analyticsService.getProductivityStats();
-      const recentSessions = sessions.slice(0, 10);
+      const recentSessions = sessions.slice(0, 8);
       panel.webview.html = getWebviewContent(
         sessions,
         analytics,
@@ -50,7 +50,6 @@ export async function openDashboardCommand(
           case "captureSession":
             try {
               await vscode.commands.executeCommand("FlowLens.quickCapture");
-              // Refresh dashboard after capture
               setTimeout(() => refreshDashboard(), 500);
             } catch (error) {
               console.error("Error executing quickCapture:", error);
@@ -87,7 +86,6 @@ export async function openDashboardCommand(
               await vscode.commands.executeCommand(
                 "FlowLens.captureFromTemplate"
               );
-              // Refresh dashboard after template capture
               setTimeout(() => refreshDashboard(), 500);
             } catch (error) {
               console.error("Error executing captureFromTemplate:", error);
@@ -111,7 +109,6 @@ export async function openDashboardCommand(
           case "importSessions":
             try {
               await vscode.commands.executeCommand("FlowLens.importSessions");
-              // Refresh dashboard after import
               setTimeout(() => refreshDashboard(), 500);
             } catch (error) {
               console.error("Error executing importSessions:", error);
@@ -202,732 +199,944 @@ function getWebviewContent(
   const costSaved = analytics?.totalCostSaved || 0;
   const avgSessionsPerDay = analytics?.averageSessionsPerDay || 0;
 
-  // Safely format numbers
-  const formatNumber = (num: number): string => {
+  // Calculate additional metrics
+  const timeSavedHours = Math.floor(timeSavedMinutes / 60);
+  const timeSavedDays = Math.floor(timeSavedHours / 8);
+  const weeklyTimeSaved = Math.round(timeSavedMinutes * 0.14);
+  const weeklyCostSaved = costSaved * 0.14;
+  const productivityGain = timeSavedMinutes > 0 ? Math.round((timeSavedMinutes / (timeSavedMinutes + totalSessions * 23)) * 100) : 0;
+
+  // Format numbers safely
+  const fmt = (num: number, decimals = 0): string => {
     if (typeof num !== "number" || isNaN(num)) {
       return "0";
     }
-    return num.toFixed(2);
+    return decimals > 0 ? num.toFixed(decimals) : Math.round(num).toString();
   };
 
-  const formatInteger = (num: number): string => {
-    if (typeof num !== "number" || isNaN(num)) {
-      return "0";
-    }
-    return Math.round(num).toString();
-  };
+  // Get session stats
+  const sessionsThisWeek = sessions.filter(s => {
+    const sessionDate = new Date(s.timestamp);
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    return sessionDate >= weekAgo;
+  }).length;
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline';">
-	<title>FlowLens Dashboard</title>
-	<style>
-		* {
-			margin: 0;
-			padding: 0;
-			box-sizing: border-box;
-		}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline';">
+  <title>FlowLens Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-		body {
-			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-			background: #1e1e1e;
-			color: #cccccc;
-			padding: 20px;
-			overflow-x: hidden;
-		}
+    :root {
+      --primary: #007ACC;
+      --primary-dark: #005A9E;
+      --primary-light: #1E90FF;
+      --success: #16825D;
+      --success-dark: #14704F;
+      --danger: #C5372C;
+      --danger-dark: #A32C23;
+      --warning: #F59E0B;
+      --bg-primary: #1E1E1E;
+      --bg-secondary: #252526;
+      --bg-tertiary: #2D2D30;
+      --border: #3E3E42;
+      --text-primary: #CCCCCC;
+      --text-secondary: #888888;
+      --text-muted: #6E6E6E;
+      --card-shadow: rgba(0, 0, 0, 0.3);
+      --hover-overlay: rgba(255, 255, 255, 0.05);
+    }
 
-		.dashboard-container {
-			max-width: 1400px;
-			margin: 0 auto;
-		}
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
 
-		.header {
-			margin-bottom: 30px;
-			border-bottom: 2px solid #007ACC;
-			padding-bottom: 20px;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-		}
+    .dashboard {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
 
-		.header-content h1 {
-			font-size: 2.5rem;
-			color: #007ACC;
-			margin-bottom: 10px;
-			display: flex;
-			align-items: center;
-			gap: 15px;
-		}
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
 
-		.header-content p {
-			font-size: 1.1rem;
-			color: #888;
-		}
+    .header-title h1 {
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      letter-spacing: -0.5px;
+    }
 
-		.refresh-btn {
-			padding: 10px 20px;
-			background: #007ACC;
-			color: white;
-			border: none;
-			border-radius: 6px;
-			cursor: pointer;
-			font-size: 14px;
-			font-weight: 600;
-			transition: all 0.3s ease;
-		}
+    .header-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
 
-		.refresh-btn:hover {
-			background: #005A9E;
-			transform: translateY(-2px);
-		}
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
 
-		.action-buttons {
-			display: flex;
-			gap: 15px;
-			margin-bottom: 30px;
-			flex-wrap: wrap;
-		}
+    /* Buttons */
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
 
-		.btn {
-			padding: 12px 24px;
-			border: none;
-			border-radius: 6px;
-			font-size: 14px;
-			font-weight: 600;
-			cursor: pointer;
-			transition: all 0.3s ease;
-			display: flex;
-			align-items: center;
-			gap: 8px;
-		}
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
 
-		.btn:disabled {
-			opacity: 0.5;
-			cursor: not-allowed;
-		}
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
 
-		.btn-primary {
-			background: #007ACC;
-			color: white;
-		}
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 122, 204, 0.4);
+    }
 
-		.btn-primary:hover:not(:disabled) {
-			background: #005A9E;
-			transform: translateY(-2px);
-			box-shadow: 0 4px 12px rgba(0, 122, 204, 0.3);
-		}
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
 
-		.btn-secondary {
-			background: #2D2D30;
-			color: #cccccc;
-			border: 1px solid #3E3E42;
-		}
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--border);
+      border-color: var(--text-secondary);
+    }
 
-		.btn-secondary:hover:not(:disabled) {
-			background: #3E3E42;
-			transform: translateY(-2px);
-		}
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid transparent;
+    }
 
-		.stats-grid {
-			display: grid;
-			grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-			gap: 20px;
-			margin-bottom: 30px;
-		}
+    .btn-ghost:hover:not(:disabled) {
+      background: var(--hover-overlay);
+      color: var(--text-primary);
+      border-color: var(--border);
+    }
 
-		.stat-card {
-			background: linear-gradient(135deg, #2D2D30 0%, #252526 100%);
-			padding: 25px;
-			border-radius: 12px;
-			border: 1px solid #3E3E42;
-			transition: all 0.3s ease;
-		}
+    .btn-sm {
+      padding: 6px 14px;
+      font-size: 13px;
+    }
 
-		.stat-card:hover {
-			transform: translateY(-4px);
-			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-			border-color: #007ACC;
-		}
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
 
-		.stat-card h3 {
-			font-size: 0.9rem;
-			color: #888;
-			text-transform: uppercase;
-			letter-spacing: 1px;
-			margin-bottom: 10px;
-		}
+    .btn-success:hover:not(:disabled) {
+      background: var(--success-dark);
+    }
 
-		.stat-value {
-			font-size: 2.5rem;
-			font-weight: 700;
-			color: #007ACC;
-			margin-bottom: 5px;
-		}
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
 
-		.stat-label {
-			font-size: 0.85rem;
-			color: #888;
-		}
+    .btn-danger:hover:not(:disabled) {
+      background: var(--danger-dark);
+    }
 
-		.stat-icon {
-			font-size: 2rem;
-			margin-bottom: 10px;
-		}
+    /* Action Bar */
+    .action-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
 
-		.content-grid {
-			display: grid;
-			grid-template-columns: 1fr 1fr;
-			gap: 20px;
-			margin-bottom: 30px;
-		}
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
 
-		@media (max-width: 900px) {
-			.content-grid {
-				grid-template-columns: 1fr;
-			}
-		}
+    .stat-card {
+      background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
 
-		.card {
-			background: #2D2D30;
-			border-radius: 12px;
-			border: 1px solid #3E3E42;
-			overflow: hidden;
-		}
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    }
 
-		.card-header {
-			padding: 20px;
-			background: linear-gradient(135deg, #007ACC 0%, #005A9E 100%);
-			color: white;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-		}
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px var(--card-shadow);
+      border-color: var(--primary);
+    }
 
-		.card-header h2 {
-			font-size: 1.3rem;
-			display: flex;
-			align-items: center;
-			gap: 10px;
-		}
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
 
-		.card-body {
-			padding: 20px;
-			max-height: 400px;
-			overflow-y: auto;
-		}
+    .stat-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
 
-		.card-body::-webkit-scrollbar {
-			width: 8px;
-		}
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: rgba(0, 122, 204, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
 
-		.card-body::-webkit-scrollbar-track {
-			background: #252526;
-		}
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      line-height: 1;
+    }
 
-		.card-body::-webkit-scrollbar-thumb {
-			background: #3E3E42;
-			border-radius: 4px;
-		}
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
 
-		.card-body::-webkit-scrollbar-thumb:hover {
-			background: #007ACC;
-		}
+    .stat-trend {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-top: 8px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: rgba(22, 130, 93, 0.1);
+      color: var(--success);
+    }
 
-		.session-item {
-			padding: 15px;
-			margin-bottom: 10px;
-			background: #252526;
-			border-radius: 8px;
-			border: 1px solid #3E3E42;
-			transition: all 0.3s ease;
-		}
+    .stat-trend.negative {
+      background: rgba(197, 55, 44, 0.1);
+      color: var(--danger);
+    }
 
-		.session-item:hover {
-			background: #2D2D30;
-			border-color: #007ACC;
-			transform: translateX(5px);
-		}
+    /* Main Content */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
 
-		.session-header {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			margin-bottom: 8px;
-		}
+    @media (max-width: 1200px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
 
-		.session-title {
-			font-weight: 600;
-			color: #007ACC;
-			font-size: 1.05rem;
-		}
+    /* Card */
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
 
-		.session-date {
-			font-size: 0.85rem;
-			color: #888;
-		}
+    .card-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-		.session-details {
-			display: flex;
-			gap: 15px;
-			font-size: 0.85rem;
-			color: #888;
-			margin-bottom: 10px;
-		}
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
 
-		.session-actions {
-			display: flex;
-			gap: 10px;
-			margin-top: 10px;
-		}
+    .card-badge {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(0, 122, 204, 0.1);
+      color: var(--primary);
+    }
 
-		.btn-small {
-			padding: 6px 12px;
-			font-size: 0.8rem;
-			border-radius: 4px;
-			border: none;
-			cursor: pointer;
-			transition: all 0.2s ease;
-			font-weight: 600;
-		}
+    .card-body {
+      padding: 24px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
 
-		.btn-small:disabled {
-			opacity: 0.5;
-			cursor: not-allowed;
-		}
+    .card-body::-webkit-scrollbar {
+      width: 6px;
+    }
 
-		.btn-restore {
-			background: #16825D;
-			color: white;
-		}
+    .card-body::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+    }
 
-		.btn-restore:hover:not(:disabled) {
-			background: #14704F;
-		}
+    .card-body::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
 
-		.btn-delete {
-			background: #C5372C;
-			color: white;
-		}
+    .card-body::-webkit-scrollbar-thumb:hover {
+      background: var(--text-secondary);
+    }
 
-		.btn-delete:hover:not(:disabled) {
-			background: #A32C23;
-		}
+    /* Session Item */
+    .session-item {
+      padding: 16px;
+      margin-bottom: 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
 
-		.empty-state {
-			text-align: center;
-			padding: 40px 20px;
-			color: #888;
-		}
+    .session-item:last-child {
+      margin-bottom: 0;
+    }
 
-		.empty-state-icon {
-			font-size: 3rem;
-			margin-bottom: 15px;
-			opacity: 0.5;
-		}
+    .session-item:hover {
+      background: var(--bg-primary);
+      border-color: var(--primary);
+      transform: translateX(4px);
+    }
 
-		.progress-bar {
-			height: 8px;
-			background: #3E3E42;
-			border-radius: 4px;
-			overflow: hidden;
-			margin-top: 10px;
-		}
+    .session-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
 
-		.progress-fill {
-			height: 100%;
-			background: linear-gradient(90deg, #007ACC, #00A4EF);
-			border-radius: 4px;
-			transition: width 0.3s ease;
-		}
+    .session-title-wrapper {
+      flex: 1;
+      min-width: 0;
+    }
 
-		.badge {
-			display: inline-block;
-			padding: 4px 8px;
-			border-radius: 4px;
-			font-size: 0.75rem;
-			font-weight: 600;
-			text-transform: uppercase;
-		}
+    .session-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-		.badge-success {
-			background: #16825D;
-			color: white;
-		}
+    .session-date {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
 
-		.badge-info {
-			background: #007ACC;
-			color: white;
-		}
+    .session-meta {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
 
-		.tip-card {
-			background: linear-gradient(135deg, #16825D 0%, #14704F 100%);
-			padding: 20px;
-			border-radius: 12px;
-			color: white;
-			margin-bottom: 30px;
-		}
+    .session-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
 
-		.tip-card h3 {
-			margin-bottom: 10px;
-			font-size: 1.2rem;
-		}
+    .session-meta-icon {
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-		.keyboard-shortcuts {
-			display: grid;
-			grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-			gap: 15px;
-			margin-top: 15px;
-		}
+    .session-branch {
+      padding: 2px 8px;
+      background: rgba(0, 122, 204, 0.1);
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--primary);
+      font-family: 'Consolas', 'Monaco', monospace;
+    }
 
-		.shortcut {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			padding: 10px;
-			background: rgba(255, 255, 255, 0.1);
-			border-radius: 6px;
-		}
+    .session-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
 
-		.key {
-			background: rgba(0, 0, 0, 0.3);
-			padding: 4px 8px;
-			border-radius: 4px;
-			font-family: monospace;
-			font-weight: 600;
-		}
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+    }
 
-		@keyframes fadeIn {
-			from { opacity: 0; transform: translateY(20px); }
-			to { opacity: 1; transform: translateY(0); }
-		}
+    .empty-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 16px;
+      background: var(--bg-tertiary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      color: var(--text-muted);
+    }
 
-		.fade-in {
-			animation: fadeIn 0.5s ease-out;
-		}
+    .empty-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
 
-		.error-message {
-			background: #C5372C;
-			color: white;
-			padding: 15px;
-			border-radius: 8px;
-			margin-bottom: 20px;
-			display: none;
-		}
+    .empty-description {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
 
-		.error-message.show {
-			display: block;
-		}
-	</style>
+    /* Chart */
+    .chart-container {
+      margin-bottom: 24px;
+    }
+
+    .chart-header {
+      margin-bottom: 16px;
+    }
+
+    .chart-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .chart-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .comparison-bars {
+      margin-bottom: 24px;
+    }
+
+    .comparison-item {
+      margin-bottom: 16px;
+    }
+
+    .comparison-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .comparison-bar {
+      height: 8px;
+      background: var(--bg-primary);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .comparison-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.6s ease;
+    }
+
+    .comparison-fill.danger {
+      background: linear-gradient(90deg, var(--danger), #E57373);
+    }
+
+    .comparison-fill.success {
+      background: linear-gradient(90deg, var(--success), #66BB6A);
+    }
+
+    /* Insights */
+    .insights-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .insight-item {
+      padding: 16px;
+      background: var(--bg-primary);
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    .insight-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+    }
+
+    .insight-row:not(:last-child) {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .insight-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .insight-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .insight-value.success {
+      color: var(--success);
+    }
+
+    .insight-value.primary {
+      color: var(--primary);
+    }
+
+    /* ROI Card */
+    .roi-card {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      padding: 24px;
+      border-radius: 8px;
+      color: white;
+      margin-top: 24px;
+    }
+
+    .roi-label {
+      font-size: 13px;
+      opacity: 0.9;
+      margin-bottom: 8px;
+    }
+
+    .roi-value {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .roi-description {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    /* Loading Spinner */
+    .spinner {
+      border: 2px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Utilities */
+    .text-muted {
+      color: var(--text-muted);
+    }
+
+    .text-success {
+      color: var(--success);
+    }
+
+    .text-danger {
+      color: var(--danger);
+    }
+
+    .mb-24 {
+      margin-bottom: 24px;
+    }
+  </style>
 </head>
 <body>
-	<div class="dashboard-container">
-		<!-- Error Message -->
-		<div id="errorMessage" class="error-message"></div>
+  <div class="dashboard">
+    <!-- Header -->
+    <header class="header fade-in">
+      <div class="header-title">
+        <h1>FlowLens Analytics</h1>
+        <p class="header-subtitle">Session Management & Productivity Insights</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-ghost btn-sm" onclick="refreshDashboard()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="opacity: 0.7">
+            <path d="M13.65 2.35A7.95 7.95 0 0 0 8 0a8 8 0 1 0 7.35 4.93l-1.5-.66A6.5 6.5 0 1 1 8 1.5c1.3 0 2.5.38 3.5 1.03L9 5h5V0l-1.85 1.85z" fill="currentColor"/>
+          </svg>
+          Refresh
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="captureSession()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          New Session
+        </button>
+      </div>
+    </header>
 
-		<!-- Header -->
-		<div class="header fade-in">
-			<div class="header-content">
-				<h1>
-					<span>📊</span>
-					FlowLens Dashboard
-				</h1>
-				<p>Your productivity command center</p>
-			</div>
-			<button class="refresh-btn" onclick="refreshDashboard()">
-				🔄 Refresh
-			</button>
-		</div>
+    <!-- Action Bar -->
+    <div class="action-bar fade-in">
+      <button class="btn btn-secondary btn-sm" onclick="restoreSession()">Restore Session</button>
+      <button class="btn btn-secondary btn-sm" onclick="captureFromTemplate()">Use Template</button>
+      <button class="btn btn-secondary btn-sm" onclick="showSessions()">View All</button>
+      <button class="btn btn-secondary btn-sm" onclick="exportSessions()">Export</button>
+      <button class="btn btn-secondary btn-sm" onclick="importSessions()">Import</button>
+    </div>
 
-		<!-- Action Buttons -->
-		<div class="action-buttons fade-in">
-			<button class="btn btn-primary" onclick="captureSession()">
-				<span>⚡</span> Quick Capture
-			</button>
-			<button class="btn btn-primary" onclick="restoreSession()">
-				<span>🔄</span> Restore Session
-			</button>
-			<button class="btn btn-secondary" onclick="captureFromTemplate()">
-				<span>📋</span> Use Template
-			</button>
-			<button class="btn btn-secondary" onclick="showSessions()">
-				<span>📚</span> All Sessions
-			</button>
-			<button class="btn btn-secondary" onclick="exportSessions()">
-				<span>📤</span> Export
-			</button>
-			<button class="btn btn-secondary" onclick="importSessions()">
-				<span>📥</span> Import
-			</button>
-		</div>
+    <!-- Stats Grid -->
+    <div class="stats-grid fade-in">
+      <div class="stat-card">
+        <div class="stat-header">
+          <div>
+            <div class="stat-title">Total Sessions</div>
+            <div class="stat-value">${fmt(totalSessions)}</div>
+            <div class="stat-label">Captured workspaces</div>
+          </div>
+          <div class="stat-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+              <path d="M9 9h6M9 15h6" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </div>
+        </div>
+        ${sessionsThisWeek > 0 ? `<div class="stat-trend">+${sessionsThisWeek} this week</div>` : ''}
+      </div>
 
-		<!-- Stats Grid -->
-		<div class="stats-grid fade-in">
-			<div class="stat-card">
-				<div class="stat-icon">💾</div>
-				<h3>Total Sessions</h3>
-				<div class="stat-value">${formatInteger(totalSessions)}</div>
-				<div class="stat-label">Captured contexts</div>
-			</div>
+      <div class="stat-card">
+        <div class="stat-header">
+          <div>
+            <div class="stat-title">Time Recovered</div>
+            <div class="stat-value">${fmt(timeSavedHours)}h</div>
+            <div class="stat-label">${fmt(timeSavedMinutes)} minutes saved</div>
+          </div>
+          <div class="stat-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 7v5l3 3" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </div>
+        </div>
+        ${timeSavedMinutes > 0 ? `<div class="stat-trend">${fmt(weeklyTimeSaved)} min/week</div>` : ''}
+      </div>
 
-			<div class="stat-card">
-				<div class="stat-icon">⏱️</div>
-				<h3>Time Saved</h3>
-				<div class="stat-value">${formatInteger(timeSavedMinutes)}</div>
-				<div class="stat-label">Minutes recovered</div>
-			</div>
+      <div class="stat-card">
+        <div class="stat-header">
+          <div>
+            <div class="stat-title">Value Generated</div>
+            <div class="stat-value">$${fmt(costSaved, 2)}</div>
+            <div class="stat-label">At $75/hour rate</div>
+          </div>
+          <div class="stat-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </div>
+        </div>
+        ${costSaved > 0 ? `<div class="stat-trend">$${fmt(weeklyCostSaved, 2)}/week</div>` : ''}
+      </div>
 
-			<div class="stat-card">
-				<div class="stat-icon">💰</div>
-				<h3>Cost Saved</h3>
-				<div class="stat-value">$${formatNumber(costSaved)}</div>
-				<div class="stat-label">At $75/hr rate</div>
-			</div>
+      <div class="stat-card">
+        <div class="stat-header">
+          <div>
+            <div class="stat-title">Productivity Gain</div>
+            <div class="stat-value">${fmt(productivityGain)}%</div>
+            <div class="stat-label">Context switch efficiency</div>
+          </div>
+          <div class="stat-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M3 12l5 5 13-13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        ${productivityGain > 0 ? `<div class="stat-trend">91% faster recovery</div>` : ''}
+      </div>
+    </div>
 
-			<div class="stat-card">
-				<div class="stat-icon">📈</div>
-				<h3>Daily Average</h3>
-				<div class="stat-value">${formatNumber(avgSessionsPerDay)}</div>
-				<div class="stat-label">Sessions per day</div>
-			</div>
-		</div>
-
-		<!-- Productivity Tip -->
-		<div class="tip-card fade-in">
-			<h3>💡 Pro Tip: Use Keyboard Shortcuts</h3>
-			<p>Speed up your workflow with these shortcuts:</p>
-			<div class="keyboard-shortcuts">
-				<div class="shortcut">
-					<span>Quick Capture</span>
-					<span class="key">Cmd+Shift+F</span>
-				</div>
-				<div class="shortcut">
-					<span>Restore Session</span>
-					<span class="key">Cmd+Shift+R</span>
-				</div>
-				<div class="shortcut">
-					<span>Dashboard</span>
-					<span class="key">Cmd+Shift+T</span>
-				</div>
-			</div>
-		</div>
-
-		<!-- Content Grid -->
-		<div class="content-grid fade-in">
-			<!-- Recent Sessions -->
-			<div class="card">
-				<div class="card-header">
-					<h2><span>📁</span> Recent Sessions</h2>
-					<span class="badge badge-info">${formatInteger(totalSessions)} Total</span>
-				</div>
-				<div class="card-body">
-					${
+    <!-- Main Content -->
+    <div class="content-grid fade-in">
+      <!-- Recent Sessions -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Recent Sessions</h2>
+          <span class="card-badge">${fmt(totalSessions)} total</span>
+        </div>
+        <div class="card-body">
+          ${
             recentSessions.length === 0
               ? `
-						<div class="empty-state">
-							<div class="empty-state-icon">📭</div>
-							<h3>No sessions yet</h3>
-							<p>Capture your first session to get started!</p>
-							<button class="btn btn-primary" onclick="captureSession()" style="margin-top: 15px;">
-								<span>⚡</span> Capture Now
-							</button>
-						</div>
-					`
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                <path d="M9 9h6M9 15h6" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+            <h3 class="empty-title">No Sessions Yet</h3>
+            <p class="empty-description">Capture your first session to start tracking your productivity</p>
+            <button class="btn btn-primary btn-sm" onclick="captureSession()">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              Create Session
+            </button>
+          </div>
+          `
               : recentSessions
-                  .map(
-                    (session) => {
-                      const title = escapeHtml(session.title || "Untitled Session");
-                      const date = new Date(session.timestamp).toLocaleDateString();
-                      const filesCount = session.editors?.length || 0;
-                      const terminalsCount = session.terminals?.length || 0;
-                      const branch = session.git?.branch ? escapeHtml(session.git.branch) : "";
+                  .map((session) => {
+                    const title = escapeHtml(session.title || "Untitled Session");
+                    const date = formatDate(session.timestamp);
+                    const timeAgo = getTimeAgo(session.timestamp);
+                    const filesCount = session.editors?.length || 0;
+                    const terminalsCount = session.terminals?.length || 0;
+                    const branch = session.git?.branch
+                      ? escapeHtml(session.git.branch)
+                      : null;
 
-                      return `
-						<div class="session-item">
-							<div class="session-header">
-								<div class="session-title">${title}</div>
-								<div class="session-date">${date}</div>
-							</div>
-							<div class="session-details">
-								<span>📄 ${filesCount} files</span>
-								<span>💻 ${terminalsCount} terminals</span>
-								${branch ? `<span>🌿 ${branch}</span>` : ""}
-							</div>
-							<div class="session-actions">
-								<button class="btn-small btn-restore" onclick="restoreSpecificSession('${escapeHtml(session.id)}')">
-									Restore
-								</button>
-								<button class="btn-small btn-delete" onclick="deleteSession('${escapeHtml(session.id)}')">
-									Delete
-								</button>
-							</div>
-						</div>
-					`;
-                    }
-                  )
+                    return `
+            <div class="session-item">
+              <div class="session-header">
+                <div class="session-title-wrapper">
+                  <div class="session-title">${title}</div>
+                  <div class="session-date">${timeAgo} • ${date}</div>
+                </div>
+              </div>
+              <div class="session-meta">
+                <div class="session-meta-item">
+                  <span class="session-meta-icon">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M2 3h12v10H2z" stroke="currentColor" stroke-width="1.5"/>
+                      <path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.5"/>
+                    </svg>
+                  </span>
+                  <span>${filesCount} ${filesCount === 1 ? 'file' : 'files'}</span>
+                </div>
+                <div class="session-meta-item">
+                  <span class="session-meta-icon">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <rect x="2" y="3" width="12" height="10" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                      <path d="M2 6h12" stroke="currentColor" stroke-width="1.5"/>
+                    </svg>
+                  </span>
+                  <span>${terminalsCount} ${terminalsCount === 1 ? 'terminal' : 'terminals'}</span>
+                </div>
+                ${branch ? `<span class="session-branch">${branch}</span>` : ''}
+              </div>
+              <div class="session-actions">
+                <button class="btn btn-success btn-sm" onclick="restoreSpecificSession('${escapeHtml(session.id)}')">
+                  Restore
+                </button>
+                <button class="btn btn-ghost btn-sm" onclick="deleteSession('${escapeHtml(session.id)}')">
+                  Delete
+                </button>
+              </div>
+            </div>
+          `;
+                  })
                   .join("")
           }
-				</div>
-			</div>
+        </div>
+      </div>
 
-			<!-- Productivity Insights -->
-			<div class="card">
-				<div class="card-header">
-					<h2><span>📊</span> Productivity Insights</h2>
-					<span class="badge badge-success">91% Faster</span>
-				</div>
-				<div class="card-body">
-					<div style="margin-bottom: 25px;">
-						<h3 style="color: #007ACC; margin-bottom: 10px;">Context Switch Recovery</h3>
-						<div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-							<span style="color: #888;">Without FlowLens</span>
-							<span style="color: #C5372C; font-weight: 600;">23 minutes</span>
-						</div>
-						<div class="progress-bar">
-							<div class="progress-fill" style="width: 100%;"></div>
-						</div>
-					</div>
+      <!-- Analytics -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Productivity Analytics</h2>
+          <span class="card-badge">Live Data</span>
+        </div>
+        <div class="card-body">
+          <!-- Context Switch Comparison -->
+          <div class="chart-container">
+            <div class="chart-header">
+              <div class="chart-title">Context Switch Recovery Time</div>
+              <div class="chart-subtitle">Average time to regain focus</div>
+            </div>
+            <div class="comparison-bars">
+              <div class="comparison-item">
+                <div class="comparison-label">
+                  <span class="text-muted">Without FlowLens</span>
+                  <span class="text-danger" style="font-weight: 600;">23 min</span>
+                </div>
+                <div class="comparison-bar">
+                  <div class="comparison-fill danger" style="width: 100%;"></div>
+                </div>
+              </div>
+              <div class="comparison-item">
+                <div class="comparison-label">
+                  <span class="text-muted">With FlowLens</span>
+                  <span class="text-success" style="font-weight: 600;">2 min</span>
+                </div>
+                <div class="comparison-bar">
+                  <div class="comparison-fill success" style="width: 8.7%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-					<div style="margin-bottom: 25px;">
-						<div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-							<span style="color: #888;">With FlowLens</span>
-							<span style="color: #16825D; font-weight: 600;">2 minutes</span>
-						</div>
-						<div class="progress-bar">
-							<div class="progress-fill" style="width: 8.7%; background: linear-gradient(90deg, #16825D, #14704F);"></div>
-						</div>
-					</div>
+          <!-- Weekly Stats -->
+          <div class="insights-grid">
+            <div class="insight-item">
+              <div class="insight-row">
+                <span class="insight-label">Time Saved (Week)</span>
+                <span class="insight-value success">${fmt(weeklyTimeSaved)} min</span>
+              </div>
+              <div class="insight-row">
+                <span class="insight-label">Value Generated (Week)</span>
+                <span class="insight-value success">$${fmt(weeklyCostSaved, 2)}</span>
+              </div>
+              <div class="insight-row">
+                <span class="insight-label">Sessions (Week)</span>
+                <span class="insight-value primary">${fmt(sessionsThisWeek)}</span>
+              </div>
+              <div class="insight-row">
+                <span class="insight-label">Daily Average</span>
+                <span class="insight-value primary">${fmt(avgSessionsPerDay, 1)}</span>
+              </div>
+            </div>
+          </div>
 
-					<div style="margin-bottom: 25px;">
-						<h3 style="color: #007ACC; margin-bottom: 10px;">Weekly Savings</h3>
-						<div style="background: #252526; padding: 15px; border-radius: 8px;">
-							<div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-								<span>Time Saved This Week</span>
-								<span style="color: #16825D; font-weight: 600;">${formatInteger(
-                  timeSavedMinutes * 0.14
-                )} min</span>
-							</div>
-							<div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-								<span>Cost Saved This Week</span>
-								<span style="color: #16825D; font-weight: 600;">$${formatNumber(
-                  costSaved * 0.14
-                )}</span>
-							</div>
-							<div style="display: flex; justify-content: space-between;">
-								<span>Sessions This Week</span>
-								<span style="color: #007ACC; font-weight: 600;">${formatInteger(
-                  avgSessionsPerDay * 7
-                )}</span>
-							</div>
-						</div>
-					</div>
+          <!-- ROI Projection -->
+          <div class="roi-card">
+            <div class="roi-label">Projected Monthly Savings</div>
+            <div class="roi-value">$${fmt(weeklyCostSaved * 4, 2)}</div>
+            <div class="roi-description">
+              Based on ${fmt(avgSessionsPerDay * 30)} interruptions/month at 21 min saved per session
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-					<div>
-						<h3 style="color: #007ACC; margin-bottom: 10px;">ROI Calculator</h3>
-						<div style="background: linear-gradient(135deg, #007ACC 0%, #005A9E 100%); padding: 15px; border-radius: 8px; color: white;">
-							<div style="font-size: 0.9rem; margin-bottom: 5px;">If you're interrupted 5 times/day:</div>
-							<div style="font-size: 1.5rem; font-weight: 700;">$656.25/week saved</div>
-							<div style="font-size: 0.85rem; opacity: 0.9;">105 minutes saved daily</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+  <script>
+    (function() {
+      const vscode = acquireVsCodeApi();
 
-	<script>
-		(function() {
-			const vscode = acquireVsCodeApi();
+      function sendMessage(command, data = {}) {
+        try {
+          console.log('Sending:', command, data);
+          vscode.postMessage({ command, ...data });
+        } catch (error) {
+          console.error('Message error:', error);
+        }
+      }
 
-			// Helper function to escape HTML
-			window.escapeHtml = function(text) {
-				const div = document.createElement('div');
-				div.textContent = text;
-				return div.innerHTML;
-			};
+      window.captureSession = () => sendMessage('captureSession');
+      window.restoreSession = () => sendMessage('restoreSession');
+      window.showSessions = () => sendMessage('showSessions');
+      window.captureFromTemplate = () => sendMessage('captureFromTemplate');
+      window.exportSessions = () => sendMessage('exportSessions');
+      window.importSessions = () => sendMessage('importSessions');
+      window.refreshDashboard = () => sendMessage('refresh');
 
-			// Show error message
-			function showError(message) {
-				const errorEl = document.getElementById('errorMessage');
-				if (errorEl) {
-					errorEl.textContent = message;
-					errorEl.classList.add('show');
-					setTimeout(() => {
-						errorEl.classList.remove('show');
-					}, 5000);
-				}
-			}
+      window.deleteSession = (sessionId) => {
+        if (!sessionId) return;
+        if (confirm('Delete this session? This action cannot be undone.')) {
+          sendMessage('deleteSession', { sessionId });
+        }
+      };
 
-			// Send message to extension with error handling
-			function sendMessage(command, data = {}) {
-				try {
-					console.log('Sending message:', command, data);
-					vscode.postMessage({ command, ...data });
-				} catch (error) {
-					console.error('Error sending message:', error);
-					showError('Failed to communicate with extension');
-				}
-			}
+      window.restoreSpecificSession = (sessionId) => {
+        if (!sessionId) return;
+        sendMessage('restoreSpecificSession', { sessionId });
+      };
 
-			window.captureSession = function() {
-				sendMessage('captureSession');
-			};
-
-			window.restoreSession = function() {
-				sendMessage('restoreSession');
-			};
-
-			window.showSessions = function() {
-				sendMessage('showSessions');
-			};
-
-			window.captureFromTemplate = function() {
-				sendMessage('captureFromTemplate');
-			};
-
-			window.exportSessions = function() {
-				sendMessage('exportSessions');
-			};
-
-			window.importSessions = function() {
-				sendMessage('importSessions');
-			};
-
-			window.deleteSession = function(sessionId) {
-				if (!sessionId) {
-					showError('Invalid session ID');
-					return;
-				}
-
-				if (confirm('Are you sure you want to delete this session? This cannot be undone.')) {
-					sendMessage('deleteSession', { sessionId });
-				}
-			};
-
-			window.restoreSpecificSession = function(sessionId) {
-				if (!sessionId) {
-					showError('Invalid session ID');
-					return;
-				}
-
-				sendMessage('restoreSpecificSession', { sessionId });
-			};
-
-			window.refreshDashboard = function() {
-				sendMessage('refresh');
-			};
-
-			// Log when dashboard is ready
-			console.log('FlowLens Dashboard loaded successfully');
-		})();
-	</script>
+      console.log('FlowLens Dashboard initialized');
+    })();
+  </script>
 </body>
 </html>`;
 }
 
-// Helper function to escape HTML in template literals
+// Helper functions
 function escapeHtml(text: string): string {
   const map: { [key: string]: string } = {
     "&": "&amp;",
@@ -937,4 +1146,39 @@ function escapeHtml(text: string): string {
     "'": "&#039;",
   };
   return text.replace(/[&<>"']/g, (m) => map[m]);
+}
+
+function formatDate(timestamp: string): string {
+  const date = new Date(timestamp);
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function getTimeAgo(timestamp: string): string {
+  const now = new Date();
+  const past = new Date(timestamp);
+  const diffMs = now.getTime() - past.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMins < 1) {
+    return "Just now";
+  }
+  if (diffMins < 60) {
+    return `${diffMins}m ago`;
+  }
+  if (diffHours < 24) {
+    return `${diffHours}h ago`;
+  }
+  if (diffDays < 7) {
+    return `${diffDays}d ago`;
+  }
+  if (diffDays < 30) {
+    return `${Math.floor(diffDays / 7)}w ago`;
+  }
+  return `${Math.floor(diffDays / 30)}mo ago`;
 }

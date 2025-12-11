@@ -2,7 +2,7 @@
   "name": "flowlens",
   "displayName": "FlowLens",
   "description": "Instantly resume your coding flow — capture and restore your VS Code sessions with open files, terminals, git branch, and notes",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "publisher": "preston176",
   "icon": "images/icon.png",
   "engines": {
